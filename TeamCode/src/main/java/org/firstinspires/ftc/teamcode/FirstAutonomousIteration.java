@@ -436,7 +436,7 @@ public class FirstAutonomousIteration extends LinearOpMode {
                         driveStraight(DRIVE_SPEED*5,-18, 90,false, true);
                         //This is where the robot will remember where the pixel should be.
                         cubeIsFound = FoundTeamProp.FOUND_MIDDLE;
-                        nextState = FSMState.GO_PARK_DROP_YELLOWPIXEL;
+                        nextState = FSMState.GO_PARK;
 
                     } else {
                         nextState = FSMState.DETECT_LEFT;
@@ -454,19 +454,19 @@ public class FirstAutonomousIteration extends LinearOpMode {
                         msg = "Cube Found Left!!!";
                         sendTelemetry(true);
 
-                        turnToHeading( TURN_SPEED*1, 90);
+                        turnToHeading( TURN_SPEED*3, 90);
                         holdHeading(TURN_SPEED*1, 90,0.1);
-                        driveStraight(DRIVE_SPEED*1,10, 90,false, true);
+                        driveStraight(DRIVE_SPEED*1,7, 90,false, true);
                         driveStraight(DRIVE_SPEED, -1, 90);
 
                         dropTwoPickOne();
 
                         // set up the place to where it is ready to go park
                         driveStraight(DRIVE_SPEED*1,3, 90,false, false);
-                        driveStraight(DRIVE_SPEED*2,-27, 90,false, true);
+                        driveStraight(DRIVE_SPEED*2,-24, 90,false, true);
                         //This is where the robot will remember where the pixel should be.
                         cubeIsFound = FoundTeamProp.FOUND_LEFT;
-                        nextState = FSMState.GO_PARK_DROP_YELLOWPIXEL;
+                        nextState = FSMState.GO_PARK;
 
                     } else {
                         nextState = FSMState.ASSUME_RIGHT;
@@ -494,7 +494,7 @@ public class FirstAutonomousIteration extends LinearOpMode {
                     driveStraight(DRIVE_SPEED*5,-24.5, 90,false, true);
                     //This is where the robot will remember where the pixel should be.
                     cubeIsFound = FoundTeamProp.FOUND_RIGHT;
-                    nextState = FSMState.GO_PARK_DROP_YELLOWPIXEL;
+                    nextState = FSMState.GO_PARK;
                     break;
 
                 case GO_PARK_DROP_YELLOWPIXEL:
