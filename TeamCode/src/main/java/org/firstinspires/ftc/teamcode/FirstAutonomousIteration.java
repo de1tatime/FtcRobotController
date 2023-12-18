@@ -756,7 +756,6 @@ public class FirstAutonomousIteration extends LinearOpMode {
 
         ctx.setHeading(getHeading());
 
-
         sleep(1000);  // Pause to display last telemetry message.
     }
 
