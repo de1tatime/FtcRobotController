@@ -234,18 +234,18 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     if (cubeIsFound == FirstAutonomousIteration.FoundTeamProp.FOUND_MIDDLE) {
                         //Drive straight until ready to scan the apriltag.
                         //Then strafe inline with the backboard according to the position of where the team prop was found.
-                        holdHeading(TURN_SPEED,-90,0.4);
+                        holdHeading(TURN_SPEED,-90*sideMul,0.4);
                         driveStraight(DRIVE_SPEED * 5, -26.5 * sideMul, sideMul * (-90), false, true);
 
                     } else if (cubeIsFound == FirstAutonomousIteration.FoundTeamProp.FOUND_LEFT) {                        //Drive straight until ready to scan the apriltag.
                         //Drive straight until ready to scan the apriltag.
                         //Then strafe inline with the backboard according to the position of where the team prop was found.
-                        holdHeading(TURN_SPEED,-90,0.4);
+                        holdHeading(TURN_SPEED,-90*sideMul,0.4);
                         driveStraight(DRIVE_SPEED * 5, -20* sideMul, sideMul * (-90), false, true);
 
                     } else if (cubeIsFound == FirstAutonomousIteration.FoundTeamProp.FOUND_RIGHT) {
                         //Then strafe inline with the backboard according to the position of where the team prop was found.
-                        holdHeading(TURN_SPEED,-90,0.4);
+                        holdHeading(TURN_SPEED,-90*sideMul,0.4);
                         driveStraight(DRIVE_SPEED * 5, -33* sideMul, sideMul * -(90), false, true);
                     }
 
@@ -291,6 +291,8 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
         telemetry.update();
 
         ctx.setHeading(getHeading());
+
+        stop();
 
     }
 
