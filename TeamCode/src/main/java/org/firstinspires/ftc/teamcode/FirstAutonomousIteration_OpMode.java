@@ -255,7 +255,6 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     driveStraight(DRIVE_SPEED * 2, -6, sideMul * -(90), false, false);
                     arm.moveArmUp();
                     claw.openClaw();
-                    waitRuntime(3);
 
                     nextState = FirstAutonomousIteration.FSMState.DONE;
 
