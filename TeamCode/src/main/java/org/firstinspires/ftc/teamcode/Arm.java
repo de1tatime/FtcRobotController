@@ -42,7 +42,7 @@ public class Arm {
 
     static final int COUNTS_PER_REVOLUTION = 288;
     static final double GEAR_RATIO = 40 / 10;
-    static final double POWER_AUTO_MOVE = 0.4;
+    static final double POWER_AUTO_MOVE = 0.6;
 
     static final double THRESHOLD_TO_SLOW_IN_DEG = 60;
 
