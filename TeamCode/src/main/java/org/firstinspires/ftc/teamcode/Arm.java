@@ -41,9 +41,11 @@ public class Arm {
 
     static final int COUNTS_PER_REVOLUTION = 288;
     static final double GEAR_RATIO = 40 / 10;
-    private double power_auto_move = 0.6;
 
-    static final double THRESHOLD_TO_SLOW_IN_DEG = 60;
+    static final double POWER_AUTO_MOVE = 1.0;
+
+    static final double THRESHOLD_TO_SLOW_IN_DEG_HI = 70;
+    static final double THRESHOLD_TO_SLOW_IN_DEG_LO = 40;
 
 
     static final double  POWER_UP_MUL = 0.8;
@@ -53,8 +55,10 @@ public class Arm {
 
     private OpMode myOpMode;   // gain access to methods in the calling OpMode.
 
-    DcMotor arm_right = null;
-    DcMotor arm_left = null;
+    private double deg = 0.0;
+
+    private DcMotor arm_right = null;
+    private DcMotor arm_left = null;
 
     CRServo fibula = null;
     public Arm (OpMode opmode) {
@@ -79,19 +83,34 @@ public class Arm {
     }
 
     public void moveArmUp() {
-        moveToDegree(140);
+        deg = 110;
+        moveToDegree(deg);
     }
 
     public void moveArmDown() {
-        moveToDegree(0);
+        deg = 0.0;
+        moveToDegree(deg);
+    }
+
+    public boolean isArmUp() {
+        if (deg >= 100) {
+            return true;
+        }
+        return false;
     }
 
     public int degToPosition(double deg) {
         return (int)(deg / 360 * COUNTS_PER_REVOLUTION * GEAR_RATIO);
     }
 
+    public double positionToDeg(int pos) {
+        return (double) arm_right.getCurrentPosition() * 360  / (COUNTS_PER_REVOLUTION * GEAR_RATIO);
+    }
+
     public void moveToDegree(double deg) {
         double targetPos = degToPosition(deg);
+        boolean isGoingUp = targetPos > arm_right.getCurrentPosition();
+
         arm_right.setTargetPosition((int)targetPos);
         arm_right.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
@@ -106,10 +125,15 @@ public class Arm {
         // keep looping while we are still active, and BOTH motors are running.
         while (arm_right.isBusy() && arm_left.isBusy()) {
 
-            if (
-                    arm_right.getCurrentPosition() > degToPosition(THRESHOLD_TO_SLOW_IN_DEG)
-                    || arm_left.getCurrentPosition() > degToPosition(THRESHOLD_TO_SLOW_IN_DEG)
-            ) {
+            // decide if we reach a threshold to slow down
+            if ((isGoingUp
+                    && (arm_right.getCurrentPosition() > degToPosition(THRESHOLD_TO_SLOW_IN_DEG_HI)
+                            || arm_left.getCurrentPosition() > degToPosition(THRESHOLD_TO_SLOW_IN_DEG_HI))
+                ) || ( !isGoingUp
+                    && (arm_right.getCurrentPosition() < degToPosition(THRESHOLD_TO_SLOW_IN_DEG_LO)
+                            || arm_left.getCurrentPosition() < degToPosition(THRESHOLD_TO_SLOW_IN_DEG_LO))
+            )) {
+
                 arm_right.setPower(0.1);
                 arm_left.setPower(0.1);
             }
@@ -125,6 +149,8 @@ public class Arm {
         arm_right.setPower(0);
         arm_left.setPower(0);
 
+        this.deg = deg;
+
     }
 
     public void sendTelemetry() {
@@ -137,25 +163,16 @@ public class Arm {
         arm_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         arm_left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        if (myOpMode.gamepad2.right_bumper) {
-
+        if ((power < 0) && (deg > 0)
+            || (power > 0) && (deg < 210)) {
             arm_right.setPower(power);
             arm_left.setPower(power);
-            
-
-        } else {
-            if (power > 0) {
-                arm_right.setPower(power * POWER_DOWN_MUL);
-                arm_left.setPower(power * POWER_DOWN_MUL);
-
-            } else {
-                arm_right.setPower(power * POWER_UP_MUL);
-                arm_left.setPower(power * POWER_UP_MUL);
-
-            }
         }
 
+        deg = positionToDeg(arm_left.getCurrentPosition());
 
+        myOpMode.telemetry.addData("Arm deg: ", "%.2f", deg);
+        sendTelemetry();
     }
 
     public void listen() {
@@ -166,7 +183,14 @@ public class Arm {
                 fibula.setPower(-myOpMode.gamepad2.left_stick_y);
 
             }
-            moveArmByPower(-myOpMode.gamepad2.right_stick_y);
+
+            double power = -myOpMode.gamepad2.right_stick_y;
+            if (Math.abs(power) > 0.1) {
+                moveArmByPower(power);
+            } else {
+                arm_right.setPower(0.0);
+                arm_left.setPower(0.0);
+            }
 
     }
 }
