@@ -172,13 +172,24 @@ public class HeadlessOpMode extends LinearOpMode {
         String StrafeToString = null;
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+
             arm.listen();
             claw.listen();
-            wrist.listen();
+            if (wrist.listen()) {
+                waitRuntime(0.2);
+            }
 
             if(gamepad2.left_bumper) {
-                wrist.wristUp();
-                arm.moveToDegree(140);
+                if (arm.isArmUp()) {
+                    claw.openClaw();
+                    arm.moveArmDown();
+                    wrist.wristDown();
+
+                } else {
+                    wrist.wristUp();
+                    arm.moveToDegree(140);
+                }
+
             }
 
             if (gamepad1.x) {
