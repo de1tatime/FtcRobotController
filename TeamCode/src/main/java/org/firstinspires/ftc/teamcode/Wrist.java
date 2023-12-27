@@ -37,6 +37,7 @@ public class Wrist {
 
 
     // Define class members
+    double wristPosition = 0.0;
 
 
     private LinearOpMode myOpMode;   // gain access to methods in the calling OpMode.
@@ -49,25 +50,55 @@ public class Wrist {
     public void init() {
         // Define and Initialize Motors (note: need to use reference to actual OpMode).
         servo = myOpMode.hardwareMap.get(Servo.class, "left_hand");
+
+        // Initialize to position 0
+        runToPosition();
+    }
+
+    public boolean runToPosition() {
+        boolean anyChange = false;
+
+        if (servo.getPosition() != wristPosition) {
+            servo.setPosition(wristPosition);
+            anyChange = true;
+        }
+        myOpMode.telemetry.addData("Wrist position: ", "%.1f", wristPosition);
+        return anyChange;
     }
 
     public void wristDown() {
-        servo.setPosition(1.0);
+        wristPosition = 1.0;
+        runToPosition();
     }
     public void wristUp() {
-        servo.setPosition(0.0);
+        wristPosition = 0.0;
+        runToPosition();
     }
 
-    public void listen() {
+    public boolean listen() {
 
         // move arm according to the right stick y
         if (myOpMode.gamepad2.dpad_up) {
-            servo.setPosition(0.0);
+            if (wristPosition > 0.0) {
+                if (myOpMode.gamepad2.right_bumper) {
+                    wristPosition -= 0.1;
+                    ;
+                } else {
+                    wristPosition = 0.0;
+                }
+            }
 
         } else if (myOpMode.gamepad2.dpad_down) {
-            servo.setPosition(1.0);
+            if (wristPosition < 1.0) {
+                if (myOpMode.gamepad2.right_bumper) {
+                    wristPosition += 0.1;
+                } else {
+                    wristPosition = 1.0;
+                }
+            }
         }
 
+        return runToPosition();
 
     }
 }
