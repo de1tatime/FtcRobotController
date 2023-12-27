@@ -29,7 +29,7 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.CRServo;
 
@@ -41,6 +41,7 @@ public class Arm {
 
     static final int COUNTS_PER_REVOLUTION = 288;
     static final double GEAR_RATIO = 40 / 10;
+
     static final double POWER_AUTO_MOVE = 1.0;
 
     static final double THRESHOLD_TO_SLOW_IN_DEG_HI = 70;
@@ -52,7 +53,7 @@ public class Arm {
     // Define class members
 
 
-    private LinearOpMode myOpMode;   // gain access to methods in the calling OpMode.
+    private OpMode myOpMode;   // gain access to methods in the calling OpMode.
 
     private double deg = 0.0;
 
@@ -60,8 +61,12 @@ public class Arm {
     private DcMotor arm_left = null;
 
     CRServo fibula = null;
-    public Arm (LinearOpMode opmode) {
+    public Arm (OpMode opmode) {
         myOpMode = opmode;
+    }
+
+    public void setPowerAutoMove(double power) {
+        power_auto_move = power;
     }
 
     public void init() {
@@ -114,11 +119,11 @@ public class Arm {
 
         // Set the required driving speed  (must be positive for RUN_TO_POSITION)
         // Start driving straight, and then enter the control loop
-        arm_right.setPower(POWER_AUTO_MOVE);
-        arm_left.setPower(POWER_AUTO_MOVE);
+        arm_right.setPower(power_auto_move);
+        arm_left.setPower(power_auto_move);
 
         // keep looping while we are still active, and BOTH motors are running.
-        while (myOpMode.opModeIsActive() && arm_right.isBusy() && arm_left.isBusy()) {
+        while (arm_right.isBusy() && arm_left.isBusy()) {
 
             // decide if we reach a threshold to slow down
             if ((isGoingUp
