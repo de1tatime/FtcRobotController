@@ -1,4 +1,4 @@
-/* Copyright (c) 2022 FIRST. All rights reserved.
+/* Copyright (c) 2017 FIRST. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -30,7 +30,10 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -49,62 +52,267 @@ import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 import java.util.List;
 
 /*
- *  This OpMode illustrates the concept of driving an autonomous path based on Gyro (IMU) heading and encoder counts.
- *  The code is structured as a LinearOpMode
+ * This file contains an example of an iterative (Non-Linear) "OpMode".
+ * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
+ * The names of OpModes appear on the menu of the FTC Driver Station.
+ * When a selection is made from the menu, the corresponding OpMode
+ * class is instantiated on the Robot Controller and executed.
  *
- *  The path to be followed by the robot is built from a series of drive, turn or pause steps.
- *  Each step on the path is defined by a single function call, and these can be strung together in any order.
+ * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
+ * It includes all the skeletal structure that all iterative OpModes contain.
  *
- *  The code REQUIRES that you have encoders on the drive motors, otherwise you should use: RobotAutoDriveByTime;
- *
- *  This code uses the Universal IMU interface so it will work with either the BNO055, or BHI260 IMU.
- *  To run as written, the Control/Expansion hub should be mounted horizontally on a flat part of the robot chassis.
- *  The REV Logo should be facing UP, and the USB port should be facing forward.
- *  If this is not the configuration of your REV Control Hub, then the code should be modified to reflect the correct orientation.
- *
- *  This sample requires that the drive Motors have been configured with names : left_drive and right_drive.
- *  It also requires that a positive power command moves both motors forward, and causes the encoders to count UP.
- *  So please verify that both of your motors move the robot forward on the first move.  If not, make the required correction.
- *  See the beginning of runOpMode() to set the FORWARD/REVERSE option for each motor.
- *
- *  This code uses RUN_TO_POSITION mode for driving straight, and RUN_USING_ENCODER mode for turning and holding.
- *  Note: This code implements the requirement of calling setTargetPosition() at least once before switching to RUN_TO_POSITION mode.
- *
- *  Notes:
- *
- *  All angles are referenced to the coordinate-frame that is set whenever resetHeading() is called.
- *  In this sample, the heading is reset when the Start button is touched on the Driver station.
- *  Note: It would be possible to reset the heading after each move, but this would accumulate steering errors.
- *
- *  The angle of movement/rotation is assumed to be a standardized rotation around the robot Z axis,
- *  which means that a Positive rotation is Counter Clockwise, looking down on the field.
- *  This is consistent with the FTC field coordinate conventions set out in the document:
- *  https://ftc-docs.firstinspires.org/field-coordinate-system
- *
- *  Control Approach.
- *
- *  To reach, or maintain a required heading, this code implements a basic Proportional Controller where:
- *
- *      Steering power = Heading Error * Proportional Gain.
- *
- *      "Heading Error" is calculated by taking the difference between the desired heading and the actual heading,
- *      and then "normalizing" it by converting it to a value in the +/- 180 degree range.
- *
- *      "Proportional Gain" is a constant that YOU choose to set the "strength" of the steering response.
- *
- *  Use Android Studio to Copy this Class, and Paste it into your "TeamCode" folder with a new name.
- *  Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
+ * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
+public class FirstAutonomousIteration_OpMode  extends OpMode
+{
+
+    // Declare OpMode members.
+    private ElapsedTime runtime = new ElapsedTime();
+    private DcMotor leftDrive = null;
+    private DcMotor rightDrive = null;
+
+    public FirstAutonomousIteration_OpMode (int sideMul, boolean isBack) {
+        this.isBack = isBack;
+        this.sideMul = sideMul;
+    }
+    /*
+     * Code to run ONCE when the driver hits INIT
+     */
+    @Override
+    public void init() {
+
+        telemetry.addData("Status", "Initialized");
+
+        initHardware();
+
+        waitRuntime(3);
+        arm.moveArmDown();
+        wrist.wristUp();
+        claw.closeClaw();
 
 
-public class FirstAutonomousIteration extends LinearOpMode {
+
+        // Tell the driver that initialization is complete.
+        telemetry.addData("Status", "Initialized");
+
+    }
+
+    /*
+     * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
+     */
+    @Override
+    public void init_loop() {
+            detectCube();
+
+            telemetry.addData(">", "Robot Heading = %4.0f", getHeading());
+            telemetry.addData("Detect cube: ", getFoundTeamPropString(cubeIsFound));
+            telemetry.update();
+    }
+
+    /*
+     * Code to run ONCE when the driver hits PLAY
+     */
+    @Override
+    public void start() {
+        runtime.reset();
+
+    }
+
+    /*
+     * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
+     */
+    @Override
+    public void loop() {
+        // Wait for the game to start (Display Gyro value while waiting)
+
+
+        nextState = FirstAutonomousIteration.FSMState.START_TO_DETECT_POS;
+//        nextState = FSMState.TEST_DRAW_TWO_PICK_ONE;
+
+        while (nextState != FirstAutonomousIteration.FSMState.DONE) {
+            // save the current heading
+            ctx.setHeading(getHeading());
+
+            prevState = currState;
+            currState = nextState;
+
+            switch (currState) {
+                case START_TO_DETECT_POS:
+                    holdHeading(TURN_SPEED, 0, 0.1);
+                    switch(cubeIsFound) {
+                        case FOUND_MIDDLE:
+                            nextState = FirstAutonomousIteration.FSMState.DETECT_MIDDLE;
+                            break;
+                        case FOUND_LEFT:
+                            nextState = FirstAutonomousIteration.FSMState.DETECT_LEFT;
+                            break;
+                        default:
+                            nextState = FirstAutonomousIteration.FSMState.ASSUME_RIGHT;
+                            break;
+                    }
+                    break;
+
+                case DETECT_MIDDLE:
+                    // go place the pixel and go back to starting position
+                    driveStraight(DRIVE_SPEED*3, 22, 0.0);
+
+                    // turn right, goes forward a little, place, and go back to initial state
+                    targetHeading = -20;
+                    turnToHeading(TURN_SPEED, targetHeading);
+                    driveStraight(DRIVE_SPEED, 2.8, targetHeading);
+
+                    dropTwoPickOne();
+                    driveStraight(DRIVE_SPEED, -(2.8-MOVE_BACK_AFTER_DROP), targetHeading);
+                    turnToHeading(TURN_SPEED, 0);
+
+                    // go back ready to park
+                    driveStraight(DRIVE_SPEED*3, -(22), 0.0);
+                    waitRuntime(1);
+                    cubeIsFound = FirstAutonomousIteration.FoundTeamProp.FOUND_MIDDLE;
+                    nextState = FirstAutonomousIteration.FSMState.GO_PARK_DROP_YELLOWPIXEL;
+                    break;
+
+                case DETECT_LEFT:
+                    driveStraight(DRIVE_SPEED*3, 17, 0.0);
+
+                    // turn left, goes forward a little, place, and go back to initial state
+                    targetHeading = 45;
+                    turnToHeading(TURN_SPEED*2, targetHeading);
+                    holdHeading(TURN_SPEED, targetHeading, 0.3);
+                    driveStraight(DRIVE_SPEED, 2.8, targetHeading);
+
+                    dropTwoPickOne();
+                    driveStraight(DRIVE_SPEED, -(2.8-MOVE_BACK_AFTER_DROP), targetHeading);
+
+                    turnToHeading(TURN_SPEED*2, 0);
+                    holdHeading(TURN_SPEED, 0, 0.3);
+
+                    // go back ready to park
+                    driveStraight(DRIVE_SPEED*3, -(17), 0.0);
+                    waitRuntime(1);
+                    cubeIsFound = FirstAutonomousIteration.FoundTeamProp.FOUND_LEFT;
+                    nextState = FirstAutonomousIteration.FSMState.GO_PARK_DROP_YELLOWPIXEL;
+                    break;
+
+                case ASSUME_RIGHT:
+                    driveStraight(DRIVE_SPEED*3, 17, 0.0);
+
+                    // turn left, goes forward a little, place, and go back to initial state
+                    targetHeading = -45;
+                    turnToHeading(TURN_SPEED*2, targetHeading);
+                    holdHeading(TURN_SPEED, targetHeading, 0.3);
+                    driveStraight(DRIVE_SPEED, 2.8, targetHeading);
+
+                    dropTwoPickOne();
+                    driveStraight(DRIVE_SPEED, -(2.8-MOVE_BACK_AFTER_DROP), targetHeading);
+
+                    turnToHeading(TURN_SPEED*2, 0);
+                    holdHeading(TURN_SPEED, 0, 0.3);
+
+                    // go back ready to park
+                    driveStraight(DRIVE_SPEED*3, -(17), 0.0);
+                    waitRuntime(1);
+                    cubeIsFound = FirstAutonomousIteration.FoundTeamProp.FOUND_RIGHT;
+                    nextState = FirstAutonomousIteration.FSMState.GO_PARK_DROP_YELLOWPIXEL;
+                    break;
+
+
+                case GO_PARK_DROP_YELLOWPIXEL:
+                    if (isBack == false) {
+                        driveStraight(DRIVE_SPEED * 5, 4, 0);
+                        driveLateral(DRIVE_SPEED*2, -51 * sideMul,  0);
+                        driveLateral(DRIVE_SPEED*5, -46 * sideMul,  0);
+                        nextState = FirstAutonomousIteration.FSMState.DONE;
+                        break;
+                    }
+
+                    //Drive straight until ready to scan the apriltag.
+                    turnToHeading(TURN_SPEED *6, sideMul * (-90));
+                    driveStraight(DRIVE_SPEED * 6, -28, sideMul * (-90));
+                    holdHeading(TURN_SPEED, sideMul* (-90), 0.1);
+
+                    if (cubeIsFound == FirstAutonomousIteration.FoundTeamProp.FOUND_MIDDLE) {
+                        //Drive straight until ready to scan the apriltag.
+                        //Then strafe inline with the backboard according to the position of where the team prop was found.
+                        holdHeading(TURN_SPEED,-90*sideMul,0.4);
+                        driveLateral(DRIVE_SPEED * 5, -26.5 * sideMul, sideMul * (-90));
+
+                    } else if (cubeIsFound == FirstAutonomousIteration.FoundTeamProp.FOUND_LEFT) {                        //Drive straight until ready to scan the apriltag.
+                        //Drive straight until ready to scan the apriltag.
+                        //Then strafe inline with the backboard according to the position of where the team prop was found.
+                        holdHeading(TURN_SPEED,-90*sideMul,0.4);
+                        driveLateral(DRIVE_SPEED * 5, -20* sideMul, sideMul * (-90));
+
+                    } else if (cubeIsFound == FirstAutonomousIteration.FoundTeamProp.FOUND_RIGHT) {
+                        //Then strafe inline with the backboard according to the position of where the team prop was found.
+                        holdHeading(TURN_SPEED,-90*sideMul,0.4);
+                        driveLateral(DRIVE_SPEED * 5, -33* sideMul, sideMul * -(90));
+                    }
+
+                    //Go front then face your back to the backdrop
+                    // ;[driveStraight(DRIVE_SPEED * 10, -10, sideMul * (-90), true, false);
+                    //Drop yellow pixel.
+                    driveStraight(DRIVE_SPEED * 2, -6, sideMul * -(90));
+                    arm.moveArmUp();
+                    claw.openClaw();
+
+                    nextState = FirstAutonomousIteration.FSMState.DONE;
+
+                    break;
+
+                case GO_PARK:
+                    turnToHeading(TURN_SPEED*10, sideMul * (-90));
+
+                    if (isBack) {
+                        driveStraight(DRIVE_SPEED * 10, -50, sideMul * (-90));
+                    } else  {
+                        driveStraight(DRIVE_SPEED*10, -30, sideMul * (-90));
+                        driveStraight(DRIVE_SPEED*11, -61, sideMul * (-90));
+                    }
+
+                    nextState = FirstAutonomousIteration.FSMState.DONE;
+                    break;
+
+                case TEST_DRAW_TWO_PICK_ONE:
+                    dropTwoPickOne();
+                    nextState = FirstAutonomousIteration.FSMState.DONE;
+                    break;
+
+                case TEST_LATERAL_RIGHT:
+                    targetHeading = getHeading();
+                    driveLateral(DRIVE_SPEED*5, 3, targetHeading);
+                    nextState = FirstAutonomousIteration.FSMState.DONE;
+                    break;
+            }
+        }
+        ctx.setHeading(getHeading());
+
+        telemetry.addData("Path", "Complete");
+        telemetry.update();
+
+        moveRobot(0, 0);
+        requestOpModeStop();
+
+
+    }
+
+    /*
+     * Code to run ONCE after the driver hits STOP
+     */
+    @Override
+    public void stop() {
+
+    }
+
+
 
     public enum FoundTeamProp {
         FOUND_NONE, FOUND_LEFT, FOUND_MIDDLE, FOUND_RIGHT;
     }
 
-    public String getFoundTeamPropString(FoundTeamProp foundTeamProp) {
+    public String getFoundTeamPropString(FirstAutonomousIteration.FoundTeamProp foundTeamProp) {
         switch(foundTeamProp) {
             case FOUND_NONE:
                 return "None";
@@ -132,9 +340,9 @@ public class FirstAutonomousIteration extends LinearOpMode {
         DONE;
     }
 
-    private FSMState currState = FSMState.UNINITIALIZED;
-    private FSMState prevState = FSMState.UNINITIALIZED;
-    private FSMState nextState = FSMState.UNINITIALIZED;
+    private FirstAutonomousIteration.FSMState currState = FirstAutonomousIteration.FSMState.UNINITIALIZED;
+    private FirstAutonomousIteration.FSMState prevState = FirstAutonomousIteration.FSMState.UNINITIALIZED;
+    private FirstAutonomousIteration.FSMState nextState = FirstAutonomousIteration.FSMState.UNINITIALIZED;
 
     private int sideMul = 1;
     private boolean isBack = false;
@@ -146,8 +354,8 @@ public class FirstAutonomousIteration extends LinearOpMode {
     private DcMotor         leftBackDrive   = null;
     private DcMotor         rightFrontDrive   = null;
     private DcMotor         rightBackDrive   = null;
-    private Servo           dronelaunch     = null;
-    private IMU             imu         = null;      // Control/Expansion Hub IMU
+    private Servo dronelaunch     = null;
+    private IMU imu         = null;      // Control/Expansion Hub IMU
 
     private double          headingError  = 0;
 
@@ -163,7 +371,6 @@ public class FirstAutonomousIteration extends LinearOpMode {
     private int leftBackTarget = 0;
     private int rightBackTarget = 0;
 
-    private ElapsedTime runtime = new ElapsedTime();
 
     // Calculate the COUNTS_PER_INCH for your specific drive train.
     // Go to your motor vendor website to determine your motor's COUNTS_PER_MOTOR_REV
@@ -175,14 +382,14 @@ public class FirstAutonomousIteration extends LinearOpMode {
     static final double     DRIVE_GEAR_REDUCTION    = 5 ;     // No External Gearing.
     static final double     WHEEL_DIAMETER_INCHES   = 3.0 ;     // For figuring circumference
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
-                                                      (WHEEL_DIAMETER_INCHES * 3.1415);
+            (WHEEL_DIAMETER_INCHES * 3.1415);
 
     // These constants define the desired driving/control characteristics
     // They can/should be tweaked to suit the specific robot drive train.
     static final double     DRIVE_SPEED             = 0.2/DRIVE_GEAR_REDUCTION;     // Max driving speed for better distance accuracy.
     static final double     TURN_SPEED              = 0.1/DRIVE_GEAR_REDUCTION;     // Max Turn speed to limit turn rate
     static final double     HEADING_THRESHOLD       = 1.0 ;    // How close must the heading get to the target before moving to next step.
-                                                               // Requiring more accuracy (a smaller number) will often make the turn take longer to get into the final position.
+    // Requiring more accuracy (a smaller number) will often make the turn take longer to get into the final position.
     // Define the Proportional control coefficient (or GAIN) for "heading control".
     // We define one value when Turning (larger errors), and the other is used when Driving straight (smaller errors).
     // Increase these numbers if the heading does not corrects strongly enough (eg: a heavy robot or using tracks)
@@ -198,7 +405,7 @@ public class FirstAutonomousIteration extends LinearOpMode {
 
     String msg = "";
 
-    FoundTeamProp cubeIsFound = FoundTeamProp.FOUND_NONE;
+    FirstAutonomousIteration.FoundTeamProp cubeIsFound = FirstAutonomousIteration.FoundTeamProp.FOUND_NONE;
     int cubeIsFoundCount = 0;
 
 
@@ -230,10 +437,7 @@ public class FirstAutonomousIteration extends LinearOpMode {
      */
     private VisionPortal visionPortal;
 
-    public FirstAutonomousIteration (int sideMul, boolean isBack) {
-        this.isBack = isBack;
-        this.sideMul = sideMul;
-    }
+
 
     public void initHardware() {
         // Initialize the hardware variables. Note that the strings used here must correspond
@@ -260,6 +464,7 @@ public class FirstAutonomousIteration extends LinearOpMode {
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
 
         arm.init();
+        arm.setPowerAutoMove(1.0);
         claw.init();
         wrist.init();
 
@@ -406,7 +611,7 @@ public class FirstAutonomousIteration extends LinearOpMode {
 
     public void detectCube() {
         List<Recognition> currentRecognitions;
-        FoundTeamProp cubeLocationDetected = FoundTeamProp.FOUND_RIGHT;
+        FirstAutonomousIteration.FoundTeamProp cubeLocationDetected = FirstAutonomousIteration.FoundTeamProp.FOUND_RIGHT;
 
         waitRuntime(1);
         currentRecognitions = tfod.getRecognitions();
@@ -434,9 +639,9 @@ public class FirstAutonomousIteration extends LinearOpMode {
             // detect middle if getLeft() > 100
             // detect right if not found
             if (recSmallestSize.getLeft() < 120) {
-                cubeLocationDetected = FoundTeamProp.FOUND_LEFT;
+                cubeLocationDetected = FirstAutonomousIteration.FoundTeamProp.FOUND_LEFT;
             } else {
-                cubeLocationDetected = FoundTeamProp.FOUND_MIDDLE;
+                cubeLocationDetected = FirstAutonomousIteration.FoundTeamProp.FOUND_MIDDLE;
             }
 
             telemetry.addData("HiConf: ", String.format("%.2f", recHighestConfidence.getLeft()) + "/" + String.format("%.2f", recHighestConfidence.getRight()));
@@ -448,7 +653,7 @@ public class FirstAutonomousIteration extends LinearOpMode {
         // count the detection
         // increase the confidence count if the same location is detected
         // otherwise decrease the confidence count until zero before changes the perceived location
-        if (cubeIsFound == FoundTeamProp.FOUND_NONE || cubeIsFound == cubeLocationDetected) {
+        if (cubeIsFound == FirstAutonomousIteration.FoundTeamProp.FOUND_NONE || cubeIsFound == cubeLocationDetected) {
             cubeIsFound = cubeLocationDetected;
             cubeIsFoundCount += 1;
             if (cubeIsFoundCount > 3) {
@@ -466,297 +671,10 @@ public class FirstAutonomousIteration extends LinearOpMode {
         sendTelemetry(true);
     }
 
-    @Override
     public void runOpMode() {
-        initHardware();
-
-        waitRuntime(3);
-        arm.moveArmDown();
-        wrist.wristUp();
-        claw.closeClaw();
-
-
-        // Wait for the game to start (Display Gyro value while waiting)
-        while (opModeInInit()) {
-            detectCube();
-
-            telemetry.addData(">", "Robot Heading = %4.0f", getHeading());
-            telemetry.addData("Detect cube: ", getFoundTeamPropString(cubeIsFound));
-            telemetry.update();
-        }
-
-        nextState = FSMState.START_TO_DETECT_POS;
-//        nextState = FSMState.TEST_DRAW_TWO_PICK_ONE;
-
-        while (nextState != FSMState.DONE) {
-            // save the current heading
-            ctx.setHeading(getHeading());
-
-            prevState = currState;
-            currState = nextState;
-
-            switch (currState) {
-                case START_TO_DETECT_POS:
-                    holdHeading(TURN_SPEED, 0, 0.1);
-                    switch(cubeIsFound) {
-                        case FOUND_MIDDLE:
-                            nextState = FSMState.DETECT_MIDDLE;
-                            break;
-                        case FOUND_LEFT:
-                            nextState = FSMState.DETECT_LEFT;
-                            break;
-                        default:
-                            nextState = FSMState.ASSUME_RIGHT;
-                            break;
-                    }
-                    break;
-
-                case DETECT_MIDDLE:
-                    // go place the pixel and go back to starting position
-                    driveStraight(DRIVE_SPEED*3, 22, 0.0);
-
-                    // turn right, goes forward a little, place, and go back to initial state
-                    targetHeading = -20;
-                    turnToHeading(TURN_SPEED, targetHeading);
-                    driveStraight(DRIVE_SPEED, 2.8, targetHeading);
-
-                    dropTwoPickOne();
-                    driveStraight(DRIVE_SPEED, -(2.8-MOVE_BACK_AFTER_DROP), targetHeading);
-                    turnToHeading(TURN_SPEED, 0);
-
-                    // go back ready to park
-                    driveStraight(DRIVE_SPEED*3, -(22), 0.0);
-
-                    nextState = FSMState.DONE;
-                    break;
-
-                case DETECT_LEFT:
-                    driveStraight(DRIVE_SPEED*3, 17, 0.0);
-
-                    // turn left, goes forward a little, place, and go back to initial state
-                    targetHeading = 45;
-                    turnToHeading(TURN_SPEED*2, targetHeading);
-                    holdHeading(TURN_SPEED, targetHeading, 0.3);
-                    driveStraight(DRIVE_SPEED, 2.8, targetHeading);
-
-                    dropTwoPickOne();
-                    driveStraight(DRIVE_SPEED, -(2.8-MOVE_BACK_AFTER_DROP), targetHeading);
-
-                    turnToHeading(TURN_SPEED*2, 0);
-                    holdHeading(TURN_SPEED, 0, 0.3);
-
-                    // go back ready to park
-                    driveStraight(DRIVE_SPEED*3, -(17), 0.0);
-
-                    nextState = FSMState.DONE;
-                    break;
-
-                case ASSUME_RIGHT:
-                    driveStraight(DRIVE_SPEED*3, 17, 0.0);
-
-                    // turn left, goes forward a little, place, and go back to initial state
-                    targetHeading = -45;
-                    turnToHeading(TURN_SPEED*2, targetHeading);
-                    holdHeading(TURN_SPEED, targetHeading, 0.3);
-                    driveStraight(DRIVE_SPEED, 2.8, targetHeading);
-
-                    dropTwoPickOne();
-                    driveStraight(DRIVE_SPEED, -(2.8-MOVE_BACK_AFTER_DROP), targetHeading);
-
-                    turnToHeading(TURN_SPEED*2, 0);
-                    holdHeading(TURN_SPEED, 0, 0.3);
-
-                    // go back ready to park
-                    driveStraight(DRIVE_SPEED*3, -(17), 0.0);
-
-                    nextState = FSMState.DONE;
-                    break;
-
-
-                case GO_PARK_DROP_YELLOWPIXEL:
-
-                    double go_to_back_distance = 79;
-                    if (isBack) {
-                        go_to_back_distance = 28;
-                    }
-
-                    //Drive straight until ready to scan the apriltag.
-                    turnToHeading(TURN_SPEED * 10, sideMul * (90));
-                    driveStraight(DRIVE_SPEED * 10, go_to_back_distance, sideMul * (90), true, false);
-
-                    if (cubeIsFound == FoundTeamProp.FOUND_MIDDLE) {
-                        //Drive straight until ready to scan the apriltag.
-                        //Then strafe inline with the backboard according to the position of where the team prop was found.
-                        driveStraight(DRIVE_SPEED * 5, 26.5 * sideMul, sideMul * (90), false, true);
-
-                    } else if (cubeIsFound == FoundTeamProp.FOUND_LEFT) {                        //Drive straight until ready to scan the apriltag.
-                        //Drive straight until ready to scan the apriltag.
-                        //Then strafe inline with the backboard according to the position of where the team prop was found.
-                        driveStraight(DRIVE_SPEED * 5, 20* sideMul, sideMul * (90), false, true);
-
-                    } else if (cubeIsFound == FoundTeamProp.FOUND_RIGHT) {
-                        //Then strafe inline with the backboard according to the position of where the team prop was found.
-                        driveStraight(DRIVE_SPEED * 5, 33* sideMul, sideMul * (90), false, true);
-
-                    }
-
-                    //Go front then face your back to the backdrop
-                    turnToHeading(TURN_SPEED * 10, sideMul * (-90));
-                    driveStraight(DRIVE_SPEED * 10, -10, sideMul * (-90), true, false);
-                    //Drop yellow pixel.
-                    arm.moveArmUp();
-                    claw.openClaw();
-
-                    nextState = FSMState.DONE;
-
-                    break;
-
-                case GO_PARK:
-                    turnToHeading(TURN_SPEED*10, sideMul * (-90));
-
-                    if (isBack) {
-                        driveStraight(DRIVE_SPEED * 10, -50, sideMul * (-90), true, false);
-                    } else  {
-                        driveStraight(DRIVE_SPEED*10, -30, sideMul * (-90), true, false);
-                        driveStraight(DRIVE_SPEED*11, -61, sideMul * (-90), true, false);
-                    }
-
-                    nextState = FSMState.DONE;
-                    break;
-
-                case TEST_DRAW_TWO_PICK_ONE:
-                    dropTwoPickOne();
-                    nextState = FSMState.DONE;
-                    break;
-
-                case TEST_LATERAL_RIGHT:
-                    targetHeading = getHeading();
-                    driveStraight(DRIVE_SPEED*5, 3, targetHeading, true, true);
-                    nextState = FSMState.DONE;
-                    break;
-            }
-        }
-
-//        //dropTwoPickOne();
-//        FoundTeamProp cubeIsFound = FoundTeamProp.FOUND_NONE;
-//
-//
-//        List<Integer> headingsToCheck = Arrays.asList(-12, 45, -60);
-//
-//
-//        for (int heading: headingsToCheck) {
-//            targetHeading = heading;
-//            msg = "detecting cube";
-//            sendTelemetry(true);
-//
-//            turnToHeading( TURN_SPEED*5, heading);
-//            holdHeading(TURN_SPEED, heading, 0.1);
-//
-//            // pre-detect
-//            // -- add code here
-//
-//            if (isCubeThere()) {
-//                msg = "Cube Found!!!";
-//                sendTelemetry(true);
-//
-//                if (heading > 0) {
-//                    cubeIsFound = FoundTeamProp.FOUND_LEFT;
-//                } else if (heading < -20) {
-//                    cubeIsFound = FoundTeamProp.FOUND_RIGHT;
-//                } else {
-//                    cubeIsFound = FoundTeamProp.FOUND_MIDDLE;
-//                }
-//                holdHeading(TURN_SPEED, heading, 0.05);
-//
-//                break;
-//            }
-//
-//            // post-detect
-//            // -- add code here
-//            waitRuntime(0.2);
-//        }
-//
-//
-//        if (cubeIsFound == FoundTeamProp.FOUND_MIDDLE) {
-//
-//            driveStraight(DRIVE_SPEED, 3, getHeading());
-//
-//            dropTwoPickOne();
-//            driveStraight(DRIVE_SPEED, -(10-MOVE_BACK_AFTER_DROP), -14.0);
-//
-//
-//
-//
-//        } else if (cubeIsFound == FoundTeamProp.FOUND_LEFT) {
-//            // TODO: assume if not found middle or left, it is on te right
-//            dropTwoPickOne();
-//
-//        } else {
-//
-//            // TODO: assume if not found middle or left, it is on te right
-//            dropTwoPickOne();
-//
-//        }
-//
-//        driveStraight(DRIVE_SPEED, 10, getHeading(), true, true);
-
-//
-//        // Step through each leg of the path,
-//        // Notes:   Reverse movement is obtained by setting a negative distance (not speed)
-//        //          holdHeading() is used after turns to let the heading stabilize
-//        //          Add a sleep(2000) after any step to keep the telemetry data visible for review
-//
-//        driveStraight(DRIVE_SPEED, 10.1, 0.0);    // Drive Forward 24"
-//        turnToHeading( TURN_SPEED, 15.0);               // Turn  CW to -45 Degrees
-//        holdHeading( TURN_SPEED, 15.0, 0.05);   // Hold -45 Deg heading for a 1/2 second
-//        turnToHeading( TURN_SPEED, 0.0);               // Turn  CW to -45 Degrees
-//        holdHeading( TURN_SPEED, 0.0, 0.05);   // Hold -45 Deg heading for a 1/2 second
-//        turnToHeading( TURN_SPEED, -20.0);               // Turn  CW to -45 Degrees
-//        holdHeading( TURN_SPEED, -20.0, 0.05);   // Hold -45 Deg heading for a 1/2 second
-//        // insert tensorflow code here
-//        turnToHeading( TURN_SPEED, 0.0);               // Turn  CW to -45 Degrees
-//        holdHeading( TURN_SPEED, 0.0, 0.05);   // Hold -45 Deg heading for a 1/2 second
-//        driveStraight(DRIVE_SPEED, 1.9, 0.0);
-//        turnToHeading(TURN_SPEED, 90);
-//        holdHeading(TURN_SPEED, 90.0, 0.05);
-//        driveStraight(DRIVE_SPEED, 24.0, 90.0);
-//
-//        turnToHeading(TURN_SPEED, 0.0);
-//        holdHeading(TURN_SPEED, 0.0, 0.05);
-//        driveStraight(DRIVE_SPEED, 22.0, 0.0);
 
 
 
-
-        // demonstrate picking up pixel
-        //claw.openClaw();
-        //waitRuntime(1.0);
-
-        //wrist.wristDown();
-        //waitRuntime(1.0);
-
-        //claw.closeClaw();
-        //waitRuntime(1.0);
-
-        //wrist.wristUp();
-        //waitRuntime(1.0);
-
-        //arm.moveArmUp();
-        //waitRuntime(1.0);
-
-        //claw.openClaw();
-        //waitRuntime(1.0);
-
-        //arm.moveArmDown();
-        //waitRuntime(1.0);
-
-
-        telemetry.addData("Path", "Complete");
-        telemetry.update();
-
-        ctx.setHeading(getHeading());
-
-        sleep(1000);  // Pause to display last telemetry message.
     }
 
     /*
@@ -790,23 +708,23 @@ public class FirstAutonomousIteration extends LinearOpMode {
 
     public void waitRuntime(double sec) {
         runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < sec)) {
+        while (runtime.seconds() < sec) {
             telemetry.update();
         }
     }
 
     /**
-    *  Drive in a straight line, on a fixed compass heading (angle), based on encoder counts.
-    *  Move will stop if either of these conditions occur:
-    *  1) Move gets to the desired position
-    *  2) Driver stops the OpMode running.
-    *
-    * @param maxDriveSpeed MAX Speed for forward/rev motion (range 0 to +1.0) .
-    * @param distance   Distance (in inches) to move from current position.  Negative distance means move backward.
-    * @param heading      Absolute Heading Angle (in Degrees) relative to last gyro reset.
-    *                   0 = fwd. +ve is CCW from fwd. -ve is CW from forward.
-    *                   If a relative angle is required, add/subtract from the current robotHeading.
-    */
+     *  Drive in a straight line, on a fixed compass heading (angle), based on encoder counts.
+     *  Move will stop if either of these conditions occur:
+     *  1) Move gets to the desired position
+     *  2) Driver stops the OpMode running.
+     *
+     * @param maxDriveSpeed MAX Speed for forward/rev motion (range 0 to +1.0) .
+     * @param distance   Distance (in inches) to move from current position.  Negative distance means move backward.
+     * @param heading      Absolute Heading Angle (in Degrees) relative to last gyro reset.
+     *                   0 = fwd. +ve is CCW from fwd. -ve is CW from forward.
+     *                   If a relative angle is required, add/subtract from the current robotHeading.
+     */
     public void driveStraight(double maxDriveSpeed, double distance, double heading, boolean applyCorrection, boolean lateral) {
 
         leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -817,7 +735,6 @@ public class FirstAutonomousIteration extends LinearOpMode {
 
 
         // Ensure that the OpMode is still active
-        if (opModeIsActive()) {
 
             // Determine new target position, and pass to motor controller
             int moveCounts = (int)(distance * COUNTS_PER_INCH);
@@ -843,8 +760,9 @@ public class FirstAutonomousIteration extends LinearOpMode {
             rightBackDrive.setTargetPosition(rightBackTarget);
 
             leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             // Set the required driving speed  (must be positive for RUN_TO_POSITION)
@@ -853,10 +771,10 @@ public class FirstAutonomousIteration extends LinearOpMode {
             moveRobot(maxDriveSpeed, 0);
 
             // keep looping while we are still active, and BOTH motors are running.
-            while (opModeIsActive() &&
-                   (leftFrontDrive.isBusy() && rightFrontDrive.isBusy()
-                           && leftBackDrive.isBusy()
-                           && rightBackDrive.isBusy())) {
+            while (
+                    (leftFrontDrive.isBusy() && rightFrontDrive.isBusy()
+                            && leftBackDrive.isBusy()
+                            && rightBackDrive.isBusy())) {
 
                 if (applyCorrection) {
                     // Determine required steering to keep on heading
@@ -881,7 +799,6 @@ public class FirstAutonomousIteration extends LinearOpMode {
             leftBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             rightBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
-    }
 
     /**
      *  Spin on the central axis to point in a new direction.
@@ -903,7 +820,7 @@ public class FirstAutonomousIteration extends LinearOpMode {
         getSteeringCorrection(heading, P_DRIVE_GAIN);
 
         // keep looping while we are still active, and not on heading.
-        while (opModeIsActive() && (Math.abs(headingError) > HEADING_THRESHOLD)) {
+        while ( (Math.abs(headingError) > HEADING_THRESHOLD)) {
 
             // Determine required steering to keep on heading
             turnSpeed = getSteeringCorrection(heading, P_TURN_GAIN);
@@ -941,7 +858,7 @@ public class FirstAutonomousIteration extends LinearOpMode {
         holdTimer.reset();
 
         // keep looping while we have time remaining.
-        while (opModeIsActive() && (holdTimer.time() < holdTime)) {
+        while ((holdTimer.time() < holdTime)) {
             // Determine required steering to keep on heading
             turnSpeed = getSteeringCorrection(heading, P_TURN_GAIN);
 
@@ -1007,6 +924,9 @@ public class FirstAutonomousIteration extends LinearOpMode {
         rightBackDrive.setPower(rightSpeed);
         leftFrontDrive.setPower(leftSpeed);
         rightFrontDrive.setPower(rightSpeed);
+
+        ctx.setHeading(getHeading());
+
     }
 
     /**
@@ -1039,4 +959,5 @@ public class FirstAutonomousIteration extends LinearOpMode {
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
         return orientation.getYaw(AngleUnit.DEGREES);
     }
+
 }
