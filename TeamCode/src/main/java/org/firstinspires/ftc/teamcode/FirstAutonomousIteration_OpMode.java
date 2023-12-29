@@ -128,10 +128,10 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
         // Wait for the game to start (Display Gyro value while waiting)
 
 
-        nextState = FirstAutonomousIteration.FSMState.START_TO_DETECT_POS;
-//        nextState = FSMState.TEST_DRAW_TWO_PICK_ONE;
+        nextState = FSMState.START_TO_DETECT_POS;
+//        nextState = FSMState.TEST_DRIVE_KEEP_HEADING;
 
-        while (nextState != FirstAutonomousIteration.FSMState.DONE) {
+        while (nextState != FSMState.DONE) {
             // save the current heading
             ctx.setHeading(getHeading());
 
@@ -143,35 +143,30 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     holdHeading(TURN_SPEED, 0, 0.1);
                     switch(cubeIsFound) {
                         case FOUND_MIDDLE:
-                            nextState = FirstAutonomousIteration.FSMState.DETECT_MIDDLE;
+                            nextState = FSMState.DETECT_MIDDLE;
                             break;
                         case FOUND_LEFT:
-                            nextState = FirstAutonomousIteration.FSMState.DETECT_LEFT;
+                            nextState = FSMState.DETECT_LEFT;
                             break;
                         default:
-                            nextState = FirstAutonomousIteration.FSMState.ASSUME_RIGHT;
+                            nextState = FSMState.ASSUME_RIGHT;
                             break;
                     }
                     break;
 
                 case DETECT_MIDDLE:
-                    // go place the pixel and go back to starting position
-                    driveStraight(DRIVE_SPEED*3, 22, 0.0);
-
-                    // turn right, goes forward a little, place, and go back to initial state
-                    targetHeading = -20;
-                    turnToHeading(TURN_SPEED, targetHeading);
-                    driveStraight(DRIVE_SPEED, 2.8, targetHeading);
+                    // go ram the team prop and place the pixel
+                    driveStraight(DRIVE_SPEED*3, 32, 0.0);
+                    driveStraight(DRIVE_SPEED*3, -7, 0.0);
 
                     dropTwoPickOne();
-                    driveStraight(DRIVE_SPEED, -(2.8-MOVE_BACK_AFTER_DROP), targetHeading);
                     turnToHeading(TURN_SPEED, 0);
 
                     // go back ready to park
-                    driveStraight(DRIVE_SPEED*3, -(22), 0.0);
+                    driveStraight(DRIVE_SPEED*3, -(25-MOVE_BACK_AFTER_DROP), 0.0);
                     waitRuntime(1);
-                    cubeIsFound = FirstAutonomousIteration.FoundTeamProp.FOUND_MIDDLE;
-                    nextState = FirstAutonomousIteration.FSMState.GO_PARK_DROP_YELLOWPIXEL;
+                    cubeIsFound = FoundTeamProp.FOUND_MIDDLE;
+                    nextState = FSMState.GO_PARK_DROP_YELLOWPIXEL;
                     break;
 
                 case DETECT_LEFT:
@@ -192,8 +187,8 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     // go back ready to park
                     driveStraight(DRIVE_SPEED*3, -(17), 0.0);
                     waitRuntime(1);
-                    cubeIsFound = FirstAutonomousIteration.FoundTeamProp.FOUND_LEFT;
-                    nextState = FirstAutonomousIteration.FSMState.GO_PARK_DROP_YELLOWPIXEL;
+                    cubeIsFound = FoundTeamProp.FOUND_LEFT;
+                    nextState = FSMState.GO_PARK_DROP_YELLOWPIXEL;
                     break;
 
                 case ASSUME_RIGHT:
@@ -214,8 +209,8 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     // go back ready to park
                     driveStraight(DRIVE_SPEED*3, -(17), 0.0);
                     waitRuntime(1);
-                    cubeIsFound = FirstAutonomousIteration.FoundTeamProp.FOUND_RIGHT;
-                    nextState = FirstAutonomousIteration.FSMState.GO_PARK_DROP_YELLOWPIXEL;
+                    cubeIsFound = FoundTeamProp.FOUND_RIGHT;
+                    nextState = FSMState.GO_PARK_DROP_YELLOWPIXEL;
                     break;
 
 
@@ -224,7 +219,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                         driveStraight(DRIVE_SPEED * 5, 4, 0);
                         driveLateral(DRIVE_SPEED*2, -51 * sideMul,  0);
                         driveLateral(DRIVE_SPEED*5, -46 * sideMul,  0);
-                        nextState = FirstAutonomousIteration.FSMState.DONE;
+                        nextState = FSMState.DONE;
                         break;
                     }
 
@@ -233,19 +228,19 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     driveStraight(DRIVE_SPEED * 6, -28, sideMul * (-90));
                     holdHeading(TURN_SPEED, sideMul* (-90), 0.1);
 
-                    if (cubeIsFound == FirstAutonomousIteration.FoundTeamProp.FOUND_MIDDLE) {
+                    if (cubeIsFound == FoundTeamProp.FOUND_MIDDLE) {
                         //Drive straight until ready to scan the apriltag.
                         //Then strafe inline with the backboard according to the position of where the team prop was found.
                         holdHeading(TURN_SPEED,-90*sideMul,0.4);
                         driveLateral(DRIVE_SPEED * 5, -26.5 * sideMul, sideMul * (-90));
 
-                    } else if (cubeIsFound == FirstAutonomousIteration.FoundTeamProp.FOUND_LEFT) {                        //Drive straight until ready to scan the apriltag.
+                    } else if (cubeIsFound == FoundTeamProp.FOUND_LEFT) {                        //Drive straight until ready to scan the apriltag.
                         //Drive straight until ready to scan the apriltag.
                         //Then strafe inline with the backboard according to the position of where the team prop was found.
                         holdHeading(TURN_SPEED,-90*sideMul,0.4);
                         driveLateral(DRIVE_SPEED * 5, -20* sideMul, sideMul * (-90));
 
-                    } else if (cubeIsFound == FirstAutonomousIteration.FoundTeamProp.FOUND_RIGHT) {
+                    } else if (cubeIsFound == FoundTeamProp.FOUND_RIGHT) {
                         //Then strafe inline with the backboard according to the position of where the team prop was found.
                         holdHeading(TURN_SPEED,-90*sideMul,0.4);
                         driveLateral(DRIVE_SPEED * 5, -33* sideMul, sideMul * -(90));
@@ -258,7 +253,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     arm.moveArmUp();
                     claw.openClaw();
 
-                    nextState = FirstAutonomousIteration.FSMState.DONE;
+                    nextState = FSMState.DONE;
 
                     break;
 
@@ -272,19 +267,26 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                         driveStraight(DRIVE_SPEED*11, -61, sideMul * (-90));
                     }
 
-                    nextState = FirstAutonomousIteration.FSMState.DONE;
+                    nextState = FSMState.DONE;
                     break;
 
                 case TEST_DRAW_TWO_PICK_ONE:
                     dropTwoPickOne();
-                    nextState = FirstAutonomousIteration.FSMState.DONE;
+                    nextState = FSMState.DONE;
                     break;
 
                 case TEST_LATERAL_RIGHT:
                     targetHeading = getHeading();
                     driveLateral(DRIVE_SPEED*5, 3, targetHeading);
-                    nextState = FirstAutonomousIteration.FSMState.DONE;
+                    nextState = FSMState.DONE;
                     break;
+
+                case TEST_DRIVE_KEEP_HEADING:
+                    driveKeepHeading(DRIVE_KEEP_HEADING_SPEED, 1, 90);
+                    nextState = FSMState.DONE;
+                    break;
+
+
             }
         }
         ctx.setHeading(getHeading());
@@ -312,7 +314,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
         FOUND_NONE, FOUND_LEFT, FOUND_MIDDLE, FOUND_RIGHT;
     }
 
-    public String getFoundTeamPropString(FirstAutonomousIteration.FoundTeamProp foundTeamProp) {
+    public String getFoundTeamPropString(FoundTeamProp foundTeamProp) {
         switch(foundTeamProp) {
             case FOUND_NONE:
                 return "None";
@@ -337,12 +339,14 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
         // all TEST states
         TEST_DRAW_TWO_PICK_ONE,
         TEST_LATERAL_RIGHT,
+
+        TEST_DRIVE_KEEP_HEADING,
         DONE;
     }
 
-    private FirstAutonomousIteration.FSMState currState = FirstAutonomousIteration.FSMState.UNINITIALIZED;
-    private FirstAutonomousIteration.FSMState prevState = FirstAutonomousIteration.FSMState.UNINITIALIZED;
-    private FirstAutonomousIteration.FSMState nextState = FirstAutonomousIteration.FSMState.UNINITIALIZED;
+    private FSMState currState = FSMState.UNINITIALIZED;
+    private FSMState prevState = FSMState.UNINITIALIZED;
+    private FSMState nextState = FSMState.UNINITIALIZED;
 
     private int sideMul = 1;
     private boolean isBack = false;
@@ -387,6 +391,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
     // These constants define the desired driving/control characteristics
     // They can/should be tweaked to suit the specific robot drive train.
     static final double     DRIVE_SPEED             = 0.2/DRIVE_GEAR_REDUCTION;     // Max driving speed for better distance accuracy.
+    static final double DRIVE_KEEP_HEADING_SPEED = 0.5;
     static final double     TURN_SPEED              = 0.1/DRIVE_GEAR_REDUCTION;     // Max Turn speed to limit turn rate
     static final double     HEADING_THRESHOLD       = 1.0 ;    // How close must the heading get to the target before moving to next step.
     // Requiring more accuracy (a smaller number) will often make the turn take longer to get into the final position.
@@ -405,7 +410,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
     String msg = "";
 
-    FirstAutonomousIteration.FoundTeamProp cubeIsFound = FirstAutonomousIteration.FoundTeamProp.FOUND_NONE;
+    FoundTeamProp cubeIsFound = FoundTeamProp.FOUND_NONE;
     int cubeIsFoundCount = 0;
 
 
@@ -437,7 +442,8 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
      */
     private VisionPortal visionPortal;
 
-
+    private double leftFrontPower, rightFrontPower;
+    private double leftBackPower, rightBackPower;
 
     public void initHardware() {
         // Initialize the hardware variables. Note that the strings used here must correspond
@@ -611,7 +617,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
     public void detectCube() {
         List<Recognition> currentRecognitions;
-        FirstAutonomousIteration.FoundTeamProp cubeLocationDetected = FirstAutonomousIteration.FoundTeamProp.FOUND_RIGHT;
+        FoundTeamProp cubeLocationDetected = FoundTeamProp.FOUND_RIGHT;
 
         waitRuntime(1);
         currentRecognitions = tfod.getRecognitions();
@@ -639,9 +645,9 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
             // detect middle if getLeft() > 100
             // detect right if not found
             if (recSmallestSize.getLeft() < 120) {
-                cubeLocationDetected = FirstAutonomousIteration.FoundTeamProp.FOUND_LEFT;
+                cubeLocationDetected = FoundTeamProp.FOUND_LEFT;
             } else {
-                cubeLocationDetected = FirstAutonomousIteration.FoundTeamProp.FOUND_MIDDLE;
+                cubeLocationDetected = FoundTeamProp.FOUND_MIDDLE;
             }
 
             telemetry.addData("HiConf: ", String.format("%.2f", recHighestConfidence.getLeft()) + "/" + String.format("%.2f", recHighestConfidence.getRight()));
@@ -653,7 +659,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
         // count the detection
         // increase the confidence count if the same location is detected
         // otherwise decrease the confidence count until zero before changes the perceived location
-        if (cubeIsFound == FirstAutonomousIteration.FoundTeamProp.FOUND_NONE || cubeIsFound == cubeLocationDetected) {
+        if (cubeIsFound == FoundTeamProp.FOUND_NONE || cubeIsFound == cubeLocationDetected) {
             cubeIsFound = cubeLocationDetected;
             cubeIsFoundCount += 1;
             if (cubeIsFoundCount > 3) {
@@ -713,18 +719,93 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
         }
     }
 
-    /**
-     *  Drive in a straight line, on a fixed compass heading (angle), based on encoder counts.
-     *  Move will stop if either of these conditions occur:
-     *  1) Move gets to the desired position
-     *  2) Driver stops the OpMode running.
-     *
-     * @param maxDriveSpeed MAX Speed for forward/rev motion (range 0 to +1.0) .
-     * @param distance   Distance (in inches) to move from current position.  Negative distance means move backward.
-     * @param heading      Absolute Heading Angle (in Degrees) relative to last gyro reset.
-     *                   0 = fwd. +ve is CCW from fwd. -ve is CW from forward.
-     *                   If a relative angle is required, add/subtract from the current robotHeading.
-     */
+    public void driveKeepHeading(double power, double seconds, double direction_deg) {
+
+        // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
+        double x_ref = Math.sin(direction_deg / 180 * Math.PI);
+        double y_ref = Math.cos(direction_deg / 180 * Math.PI);
+        double max;
+
+        double heading = getHeading();
+        double cos_heading = Math.cos(heading/180*Math.PI);
+        double sin_heading = Math.sin(heading/180*Math.PI);
+
+        double x_frame = x_ref * cos_heading + y_ref * sin_heading;
+        double y_frame = -x_ref * sin_heading + y_ref * cos_heading;
+
+        // Combine the joystick requests for each axis-motion to determine each wheel's power.
+        // Set up a variable for each drive wheel to save the power level for telemetry.
+        double leftFrontPower0, rightFrontPower0;
+        double turnSpeed;
+
+
+        // consider straffing with left and right trigger
+        leftFrontPower0 = x_frame * 0.7 + y_frame * 0.7;
+        rightFrontPower0 = -x_frame * 0.7 + y_frame * 0.7;
+
+
+        leftFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        leftBackDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightBackDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        runtime.reset();
+        while (runtime.seconds() < seconds) {
+            // apply correction based on the heading
+            rightBackPower = leftFrontPower = leftFrontPower0;
+            leftBackPower = rightFrontPower = rightFrontPower0;
+
+            turnSpeed = getSteeringCorrection(heading, P_TURN_GAIN);
+            leftFrontPower -= turnSpeed;
+            leftBackPower -= turnSpeed;
+            rightFrontPower += turnSpeed;
+            rightBackPower += turnSpeed;
+
+
+            // Normalize the values so no wheel power exceeds 100%
+            // This ensures that the robot maintains the desired motion.
+            max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
+            max = Math.max(max, Math.abs(leftBackPower));
+            max = Math.max(max, Math.abs(rightBackPower));
+
+            if (max > 1.0) {
+                leftFrontPower /= max;
+                rightFrontPower /= max;
+                leftBackPower /= max;
+                rightBackPower /= max;
+
+            }
+
+            leftFrontDrive.setPower(leftFrontPower * power);
+            rightFrontDrive.setPower(rightFrontPower * power);
+            leftBackDrive.setPower(leftBackPower * power );
+            rightBackDrive.setPower(rightBackPower * power);
+
+            telemetry.addData("left/right power: ", "%.2f/%.2f", leftFrontPower, rightFrontPower);
+            telemetry.update();
+
+        }
+
+        leftFrontDrive.setPower(0);
+        rightFrontDrive.setPower(0);
+        leftBackDrive.setPower(0);
+        rightBackDrive.setPower(0);
+
+    }
+
+        /**
+         *  Drive in a straight line, on a fixed compass heading (angle), based on encoder counts.
+         *  Move will stop if either of these conditions occur:
+         *  1) Move gets to the desired position
+         *  2) Driver stops the OpMode running.
+         *
+         * @param maxDriveSpeed MAX Speed for forward/rev motion (range 0 to +1.0) .
+         * @param distance   Distance (in inches) to move from current position.  Negative distance means move backward.
+         * @param heading      Absolute Heading Angle (in Degrees) relative to last gyro reset.
+         *                   0 = fwd. +ve is CCW from fwd. -ve is CW from forward.
+         *                   If a relative angle is required, add/subtract from the current robotHeading.
+         */
     public void driveStraight(double maxDriveSpeed, double distance, double heading, boolean applyCorrection, boolean lateral) {
 
         leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
