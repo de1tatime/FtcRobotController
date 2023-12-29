@@ -90,7 +90,6 @@ public class HeadlessOpMode extends LinearOpMode {
     private DcMotor rightBackDrive = null;
     private Servo dronelaunch = null;
     private double mulPower = 0.5;
-    private double turnMulPower = .5;
     private double heading = 0.0;
     private double x_ref = 0.0;
     private double y_ref = 0.0;
@@ -253,10 +252,10 @@ public class HeadlessOpMode extends LinearOpMode {
 
             // go turn
                 if (Math.abs (gamepad1.right_stick_x) > 0.1) {
-                    leftFrontPower += gamepad1.right_stick_x * turnMulPower;
-                    leftBackPower += gamepad1.right_stick_x * turnMulPower;
-                    rightFrontPower += -gamepad1.right_stick_x * turnMulPower;
-                    rightBackPower += -gamepad1.right_stick_x * turnMulPower;
+                    leftFrontPower += gamepad1.right_stick_x;
+                    leftBackPower += gamepad1.right_stick_x;
+                    rightFrontPower += -gamepad1.right_stick_x;
+                    rightBackPower += -gamepad1.right_stick_x;
 
                     // save the targetHeading everytime we have actions on the right joystick
                     targetHeading = getHeading();
@@ -286,17 +285,6 @@ public class HeadlessOpMode extends LinearOpMode {
                mulPower-=0.1;
                waitRuntime(0.2);
            }
-            if(gamepad1.dpad_up){
-                turnMulPower+=0.1;
-                waitRuntime(0.2);
-            }
-            // This part of this code is to increase the speed of the motor a little.
-            if(gamepad1.dpad_down){
-                turnMulPower-=0.1;
-                waitRuntime(0.2);
-            }
-
-
 
             if (mulPower > 1) {
                mulPower = 1;
@@ -306,8 +294,6 @@ public class HeadlessOpMode extends LinearOpMode {
                mulPower = 0.2;
         }
 
-            turnMulPower = turnMulPower < 0.2 ? 0.2 : turnMulPower;
-            turnMulPower = turnMulPower > 1.0 ? 1.0 : turnMulPower;
 
 
 
