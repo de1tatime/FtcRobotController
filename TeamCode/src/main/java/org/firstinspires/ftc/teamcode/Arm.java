@@ -83,7 +83,7 @@ public class Arm {
     }
 
     public void moveArmUp() {
-        deg = 110;
+        deg = 140;
         moveToDegree(deg);
     }
 
