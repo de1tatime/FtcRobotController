@@ -142,7 +142,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                 case START_TO_DETECT_POS:
                     holdHeading(TURN_SPEED, 0, 0.1);
                     // todo just forceto middle for now
-                    cubeIsFound = FoundTeamProp.FOUND_RIGHT;
+                    cubeIsFound = FoundTeamProp.FOUND_LEFT;
                     switch(cubeIsFound) {
                         case FOUND_MIDDLE:
                             nextState = FSMState.DETECT_MIDDLE;
@@ -194,6 +194,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
 
                 case DETECT_LEFT:
+
                     driveStraight(DRIVE_SPEED*3, 17, 0.0);
 
                     // turn left, goes forward a little, place, and go back to initial state
@@ -205,15 +206,56 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     dropTwoPickOne();
                     driveStraight(DRIVE_SPEED, -(2.8-MOVE_BACK_AFTER_DROP), targetHeading);
 
-                    turnToHeading(TURN_SPEED*2, 0);
-                    holdHeading(TURN_SPEED, 0, 0.3);
 
-                    // go back ready to park
-                    driveStraight(DRIVE_SPEED*3, -(17), 0.0);
-                    waitRuntime(1);
-                    cubeIsFound = FoundTeamProp.FOUND_LEFT;
-                    nextState = FSMState.GO_PARK_DROP_YELLOWPIXEL;
-                    break;
+                        // go back to the initial position and
+                        turnToHeading(TURN_SPEED*2, 0);
+                        holdHeading(TURN_SPEED, 0, 0.2);
+
+                        // go back ready to park
+                        driveStraight(DRIVE_SPEED*3, -(17), 0.0);
+                        driveStraight(DRIVE_SPEED*1, 6, 0.0);
+
+                        turnToHeading(TURN_SPEED*2, -90);
+
+                        if (isBack) {
+                            driveKeepHeading(0.5, 1.0, 90);
+
+                        } else{
+                            driveKeepHeading(0.5, 1.0, 90);
+                            driveKeepHeading(0.5, 1.0, 90);
+
+                        }
+                        waitRuntime(0.5);
+                        driveKeepHeading(1, 0.5, 0);
+
+                        // and then drop yellow pixel
+                        arm.moveArmUp();
+                        claw.openClaw();
+
+                        nextState = FSMState.DONE;
+
+
+                        break;
+//                    driveStraight(DRIVE_SPEED*3, 17, 0.0);
+//
+//                    // turn left, goes forward a little, place, and go back to initial state
+//                    targetHeading = 45;
+//                    turnToHeading(TURN_SPEED*2, targetHeading);
+//                    holdHeading(TURN_SPEED, targetHeading, 0.3);
+//                    driveStraight(DRIVE_SPEED, 2.8, targetHeading);
+//
+//                    dropTwoPickOne();
+//                    driveStraight(DRIVE_SPEED, -(2.8-MOVE_BACK_AFTER_DROP), targetHeading);
+//
+//                    turnToHeading(TURN_SPEED*2, 0);
+//                    holdHeading(TURN_SPEED, 0, 0.3);
+//
+//                    // go back ready to park
+//                    driveStraight(DRIVE_SPEED*3, -(17), 0.0);
+//                    waitRuntime(1);
+//                    cubeIsFound = FoundTeamProp.FOUND_LEFT;
+//                    nextState = FSMState.GO_PARK_DROP_YELLOWPIXEL;
+//                    break;
 
                 case ASSUME_RIGHT:
                     driveStraight(DRIVE_SPEED*3, 17, 0.0);
