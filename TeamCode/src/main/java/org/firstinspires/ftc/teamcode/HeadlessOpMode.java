@@ -243,7 +243,7 @@ public class HeadlessOpMode extends LinearOpMode {
                 rightFrontPower = -x_frame * 0.7 + y_frame * 0.7 - gamepad1.right_trigger + gamepad1.left_trigger;
                 leftBackPower = rightFrontPower;
 
-                // apply correction based on the heading
+                //  correction based on the heading
                 double turnSpeed = getSteeringCorrection(getTargetHeading(), P_TURN_GAIN);
                 leftFrontPower -= turnSpeed;
                 leftBackPower -= turnSpeed;
