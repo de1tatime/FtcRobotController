@@ -141,6 +141,8 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
             switch (currState) {
                 case START_TO_DETECT_POS:
                     holdHeading(TURN_SPEED, 0, 0.1);
+                    // todo just forceto middle for now
+                    cubeIsFound = FoundTeamProp.FOUND_RIGHT;
                     switch(cubeIsFound) {
                         case FOUND_MIDDLE:
                             nextState = FSMState.DETECT_MIDDLE;
@@ -156,18 +158,40 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
                 case DETECT_MIDDLE:
                     // go ram the team prop and place the pixel
-                    driveStraight(DRIVE_SPEED*3, 32, 0.0);
-                    driveStraight(DRIVE_SPEED*3, -7, 0.0);
+                    driveStraight(DRIVE_SPEED*2, 32, 0.0);
+                    driveStraight(DRIVE_SPEED*2, -7, 0.0);
 
                     dropTwoPickOne();
                     turnToHeading(TURN_SPEED, 0);
 
-                    // go back ready to park
-                    driveStraight(DRIVE_SPEED*3, -(25-MOVE_BACK_AFTER_DROP), 0.0);
-                    waitRuntime(1);
-                    cubeIsFound = FoundTeamProp.FOUND_MIDDLE;
-                    nextState = FSMState.GO_PARK_DROP_YELLOWPIXEL;
+                    // go forward
+                    driveStraight(DRIVE_SPEED*2, 2, 0.0);
+
+                    turnToHeading(TURN_SPEED*2, -90);
+                    driveKeepHeading(1, 0.15, 0);
+                    waitRuntime(0.1);
+//                    driveLateral(DRIVE_SPEED*2, 10, -90);
+
+
+
+                    // go to the backboard
+                    if (isBack) {
+                        driveKeepHeading(1, 0.5, 90);
+
+                    } else {
+                        driveKeepHeading(1, 1.1, 90);
+
+                    }
+
+                    // and then drop yellow pixel
+                    arm.moveArmUp();
+                    claw.openClaw();
+
+                    nextState = FSMState.DONE;
+
                     break;
+
+
 
                 case DETECT_LEFT:
                     driveStraight(DRIVE_SPEED*3, 17, 0.0);
@@ -203,15 +227,49 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     dropTwoPickOne();
                     driveStraight(DRIVE_SPEED, -(2.8-MOVE_BACK_AFTER_DROP), targetHeading);
 
-                    turnToHeading(TURN_SPEED*2, 0);
-                    holdHeading(TURN_SPEED, 0, 0.3);
+                    if (isBack) {
+                        // go straight to theboard without going back
+                        turnToHeading(TURN_SPEED*2, -90);
+                        //strafe a little to the left and trhen go to the board
+                        driveKeepHeading(1, 0.1, 0);
+                        driveKeepHeading(1, 0.5, 90);
 
-                    // go back ready to park
-                    driveStraight(DRIVE_SPEED*3, -(17), 0.0);
-                    waitRuntime(1);
-                    cubeIsFound = FoundTeamProp.FOUND_RIGHT;
-                    nextState = FSMState.GO_PARK_DROP_YELLOWPIXEL;
-                    break;
+                        // and then drop yellow pixel
+                        arm.moveArmUp();
+                        claw.openClaw();
+
+                        nextState = FSMState.DONE;
+
+                        break;
+
+                    } else {
+                        // go back to the initial position and
+                        turnToHeading(TURN_SPEED*2, 0);
+                        holdHeading(TURN_SPEED, 0, 0.2);
+
+                        // go back ready to park
+                        driveStraight(DRIVE_SPEED*3, -(17), 0.0);
+                        driveStraight(DRIVE_SPEED*1, 6, 0.0);
+
+                        turnToHeading(TURN_SPEED*2, -90);
+
+                        driveKeepHeading(0.5, 1.0, 90);
+                        driveKeepHeading(0.5, 1.0, 90);
+                        waitRuntime(0.5);
+                        driveKeepHeading(1, 0.5, 0);
+
+                        // and then drop yellow pixel
+                        arm.moveArmUp();
+                        claw.openClaw();
+
+                        nextState = FSMState.DONE;
+
+
+                        break;
+                    }
+
+
+
 
 
                 case GO_PARK_DROP_YELLOWPIXEL:
@@ -221,41 +279,48 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                         driveLateral(DRIVE_SPEED*5, -46 * sideMul,  0);
                         nextState = FSMState.DONE;
                         break;
+                    } else {
+                        driveStraight(DRIVE_SPEED * 5, 4, 0);
+                        turnToHeading(TURN_SPEED *2, sideMul * (-90));
+                        driveKeepHeading(1, 0.5, 90);
+                        waitRuntime(0.1);
+                        driveKeepHeading(1, 0.4, 0);
+
+                        nextState = FSMState.DONE;
+                        break;
                     }
 
-                    //Drive straight until ready to scan the apriltag.
-                    turnToHeading(TURN_SPEED *6, sideMul * (-90));
-                    driveStraight(DRIVE_SPEED * 6, -28, sideMul * (-90));
-                    holdHeading(TURN_SPEED, sideMul* (-90), 0.1);
-
-                    if (cubeIsFound == FoundTeamProp.FOUND_MIDDLE) {
-                        //Drive straight until ready to scan the apriltag.
-                        //Then strafe inline with the backboard according to the position of where the team prop was found.
-                        holdHeading(TURN_SPEED,-90*sideMul,0.4);
-                        driveLateral(DRIVE_SPEED * 5, -26.5 * sideMul, sideMul * (-90));
-
-                    } else if (cubeIsFound == FoundTeamProp.FOUND_LEFT) {                        //Drive straight until ready to scan the apriltag.
-                        //Drive straight until ready to scan the apriltag.
-                        //Then strafe inline with the backboard according to the position of where the team prop was found.
-                        holdHeading(TURN_SPEED,-90*sideMul,0.4);
-                        driveLateral(DRIVE_SPEED * 5, -20* sideMul, sideMul * (-90));
-
-                    } else if (cubeIsFound == FoundTeamProp.FOUND_RIGHT) {
-                        //Then strafe inline with the backboard according to the position of where the team prop was found.
-                        holdHeading(TURN_SPEED,-90*sideMul,0.4);
-                        driveLateral(DRIVE_SPEED * 5, -33* sideMul, sideMul * -(90));
-                    }
-
-                    //Go front then face your back to the backdrop
-                    // ;[driveStraight(DRIVE_SPEED * 10, -10, sideMul * (-90), true, false);
-                    //Drop yellow pixel.
-                    driveStraight(DRIVE_SPEED * 2, -6, sideMul * -(90));
-                    arm.moveArmUp();
-                    claw.openClaw();
-
-                    nextState = FSMState.DONE;
-
-                    break;
+//                    driveStraight(DRIVE_SPEED * 6, -28, sideMul * (-90));
+//                    holdHeading(TURN_SPEED, sideMul* (-90), 0.1);
+//
+//                    if (cubeIsFound == FoundTeamProp.FOUND_MIDDLE) {
+//                        //Drive straight until ready to scan the apriltag.
+//                        //Then strafe inline with the backboard according to the position of where the team prop was found.
+//                        holdHeading(TURN_SPEED,-90*sideMul,0.4);
+//                        driveLateral(DRIVE_SPEED * 5, -26.5 * sideMul, sideMul * (-90));
+//
+//                    } else if (cubeIsFound == FoundTeamProp.FOUND_LEFT) {                        //Drive straight until ready to scan the apriltag.
+//                        //Drive straight until ready to scan the apriltag.
+//                        //Then strafe inline with the backboard according to the position of where the team prop was found.
+//                        holdHeading(TURN_SPEED,-90*sideMul,0.4);
+//                        driveLateral(DRIVE_SPEED * 5, -20* sideMul, sideMul * (-90));
+//
+//                    } else if (cubeIsFound == FoundTeamProp.FOUND_RIGHT) {
+//                        //Then strafe inline with the backboard according to the position of where the team prop was found.
+//                        holdHeading(TURN_SPEED,-90*sideMul,0.4);
+//                        driveLateral(DRIVE_SPEED * 5, -33* sideMul, sideMul * -(90));
+//                    }
+//
+//                    //Go front then face your back to the backdrop
+//                    // ;[driveStraight(DRIVE_SPEED * 10, -10, sideMul * (-90), true, false);
+//                    //Drop yellow pixel.
+//                    driveStraight(DRIVE_SPEED * 2, -6, sideMul * -(90));
+//                    arm.moveArmUp();
+//                    claw.openClaw();
+//
+//                    nextState = FSMState.DONE;
+//
+//                    break;
 
                 case GO_PARK:
                     turnToHeading(TURN_SPEED*10, sideMul * (-90));
@@ -722,7 +787,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
     public void driveKeepHeading(double power, double seconds, double direction_deg) {
 
         // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
-        double x_ref = Math.sin(direction_deg / 180 * Math.PI);
+        double x_ref = -Math.sin(direction_deg / 180 * Math.PI);
         double y_ref = Math.cos(direction_deg / 180 * Math.PI);
         double max;
 
