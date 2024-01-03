@@ -252,10 +252,10 @@ public class HeadlessOpMode extends LinearOpMode {
 
             // go turn
                 if (Math.abs (gamepad1.right_stick_x) > 0.1) {
-                    leftFrontPower += gamepad1.right_stick_x;
-                    leftBackPower += gamepad1.right_stick_x;
-                    rightFrontPower += -gamepad1.right_stick_x;
-                    rightBackPower += -gamepad1.right_stick_x;
+                    leftFrontPower += gamepad1.right_stick_x * 0.6;
+                    leftBackPower += gamepad1.right_stick_x * 0.6;
+                    rightFrontPower += -gamepad1.right_stick_x * 0.6;
+                    rightBackPower += -gamepad1.right_stick_x * 0.6;
 
                     // save the targetHeading everytime we have actions on the right joystick
                     targetHeading = getHeading();

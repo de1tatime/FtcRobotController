@@ -141,8 +141,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
             switch (currState) {
                 case START_TO_DETECT_POS:
                     holdHeading(TURN_SPEED, 0, 0.1);
-                    // todo just forceto middle for now
-                    cubeIsFound = FoundTeamProp.FOUND_LEFT;
+                    cubeIsFound = FoundTeamProp.FOUND_MIDDLE;
                     switch(cubeIsFound) {
                         case FOUND_MIDDLE:
                             nextState = FSMState.DETECT_MIDDLE;
@@ -167,7 +166,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     // go forward
                     driveStraight(DRIVE_SPEED*2, 2, 0.0);
 
-                    turnToHeading(TURN_SPEED*2, -90);
+                    turnToHeading(TURN_SPEED*2, sideMul * -90);
                     driveKeepHeading(1, 0.15, 0);
                     waitRuntime(0.1);
 //                    driveLateral(DRIVE_SPEED*2, 10, -90);
@@ -176,22 +175,21 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
                     // go to the backboard
                     if (isBack) {
-                        driveKeepHeading(1, 0.5, 90);
+                        driveKeepHeading(0.5, 1.0, sideMul * 90);
 
                     } else {
-                        driveKeepHeading(1, 1.1, 90);
+                        driveKeepHeading(0.5, 2.2, sideMul * 90);
 
                     }
 
                     // and then drop yellow pixel
                     arm.moveArmUp();
+//                    wrist.go_to_position(WRIST_POS_AT_LOW_BAR);
                     claw.openClaw();
 
                     nextState = FSMState.DONE;
 
                     break;
-
-
 
                 case DETECT_LEFT:
 
@@ -207,30 +205,61 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     driveStraight(DRIVE_SPEED, -(2.8-MOVE_BACK_AFTER_DROP), targetHeading);
 
 
-                        // go back to the initial position and
-                        turnToHeading(TURN_SPEED*2, 0);
-                        holdHeading(TURN_SPEED, 0, 0.2);
+
+                    if (isBack) {
+                        if (sideMul == 1) {
+                            nextState = FSMState.DETECT_LEFT_BACK_BLUE;
+                        } else {
+                            nextState = FSMState.DETECT_LEFT_BACK_RED;
+                        }
+
+                    } else {
+                        if (sideMul == 1) {
+                            nextState = FSMState.DETECT_LEFT_FRONT_BLUE;
+                        } else {
+                            nextState = FSMState.DETECT_LEFT_FRONT_RED;
+                        }
+                    }
+                    break;
+
+                case ASSUME_RIGHT_BACK_RED:
+                case DETECT_LEFT_BACK_BLUE:
+                case DETECT_LEFT_FRONT_BLUE:
+                case ASSUME_RIGHT_FRONT_RED:
+
+                    // go back to the initial position and
+                    turnToHeading(TURN_SPEED*2, 0);
+                    holdHeading(TURN_SPEED, 0, 0.2);
 
                         // go back ready to park
                         driveStraight(DRIVE_SPEED*3, -(17), 0.0);
                         driveStraight(DRIVE_SPEED*1, 6, 0.0);
 
-                        turnToHeading(TURN_SPEED*2, -90);
+                        turnToHeading(TURN_SPEED*2, sideMul * -90);
 
                         if (isBack) {
-                            driveKeepHeading(0.5, 1.0, 90);
+                            driveKeepHeading(0.5, 1.0, sideMul * 90);
 
                         } else{
-                            driveKeepHeading(0.5, 1.0, 90);
-                            driveKeepHeading(0.5, 1.0, 90);
+                            driveKeepHeading(0.5, 1.0, sideMul * 90);
+                            driveKeepHeading(0.5, 1.0, sideMul * 90);
 
                         }
                         waitRuntime(0.5);
-                        driveKeepHeading(1, 0.5, 0);
+
+                        if (currState == FSMState.DETECT_LEFT_BACK_BLUE || currState == FSMState.DETECT_LEFT_FRONT_BLUE) {
+                            driveKeepHeading(1, .35, 0);
+                        } else {
+                            driveKeepHeading(1, 0.35, 0);
+
+                        }
+
 
                         // and then drop yellow pixel
                         arm.moveArmUp();
-                        claw.openClaw();
+//                    wrist.go_to_position(WRIST_POS_AT_LOW_BAR);
+
+                    claw.openClaw();
 
                         nextState = FSMState.DONE;
 
@@ -270,21 +299,49 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     driveStraight(DRIVE_SPEED, -(2.8-MOVE_BACK_AFTER_DROP), targetHeading);
 
                     if (isBack) {
-                        // go straight to theboard without going back
-                        turnToHeading(TURN_SPEED*2, -90);
-                        //strafe a little to the left and trhen go to the board
-                        driveKeepHeading(1, 0.1, 0);
-                        driveKeepHeading(1, 0.5, 90);
+                        if (sideMul == 1) {
+                            nextState = FSMState.ASSUME_RIGHT_BACK_BLUE;
+                        } else {
+                            nextState = FSMState.ASSUME_RIGHT_BACK_RED;
+                        }
+
+                    } else {
+                        if (sideMul == 1) {
+                            nextState = FSMState.ASSUME_RIGHT_FRONT_BLUE;
+                        } else {
+                            nextState = FSMState.ASSUME_RIGHT_FRONT_RED;
+                        }
+                    }
+                    break;
+
+                case ASSUME_RIGHT_BACK_BLUE:
+                case DETECT_LEFT_BACK_RED:
+                        // go straight to the board without going back
+                        turnToHeading(TURN_SPEED*2, sideMul * -90);
+                        //strafe a little to the left and then go to the board
+                        // if blue strfe to the front for 0.35
+                        if (sideMul == 1) {
+                            // isBack and Blue, right
+                            driveKeepHeading(1, 0.35, 0);
+                        } else {
+                            // in back and Red  , left
+                            driveKeepHeading(1, 0.4, 0);
+                        }
+
+                        driveKeepHeading(0.8, 0.60, sideMul * 90);
 
                         // and then drop yellow pixel
                         arm.moveArmUp();
-                        claw.openClaw();
+//                    wrist.go_to_position(WRIST_POS_AT_LOW_BAR);
+
+                    claw.openClaw();
 
                         nextState = FSMState.DONE;
 
                         break;
 
-                    } else {
+                case ASSUME_RIGHT_FRONT_BLUE:
+                case DETECT_LEFT_FRONT_RED:
                         // go back to the initial position and
                         turnToHeading(TURN_SPEED*2, 0);
                         holdHeading(TURN_SPEED, 0, 0.2);
@@ -293,22 +350,32 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                         driveStraight(DRIVE_SPEED*3, -(17), 0.0);
                         driveStraight(DRIVE_SPEED*1, 6, 0.0);
 
-                        turnToHeading(TURN_SPEED*2, -90);
+                        // face behind the back board
+                        turnToHeading(TURN_SPEED*2, sideMul * -90);
 
-                        driveKeepHeading(0.5, 1.0, 90);
-                        driveKeepHeading(0.5, 1.0, 90);
+                        // go back
+                        driveKeepHeading(0.5, 1.0, sideMul * 90);
+                        driveKeepHeading(0.5, 1.0, sideMul * 90);
                         waitRuntime(0.5);
-                        driveKeepHeading(1, 0.5, 0);
+
+                        if (currState == FSMState.ASSUME_RIGHT_FRONT_BLUE) {
+                            // right front blue
+                            driveKeepHeading(1, 0.5, 0);
+                        } else {
+                            // left front red
+                            // longer because red is further down
+                            driveKeepHeading(1, 0.7, 0);
+                        }
 
                         // and then drop yellow pixel
                         arm.moveArmUp();
-                        claw.openClaw();
+//                    wrist.go_to_position(WRIST_POS_AT_LOW_BAR);
+
+                    claw.openClaw();
 
                         nextState = FSMState.DONE;
 
-
                         break;
-                    }
 
 
 
@@ -441,6 +508,15 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
         // initial state
         START_TO_DETECT_POS,
         DETECT_LEFT, DETECT_MIDDLE, ASSUME_RIGHT,
+        ASSUME_RIGHT_BACK_BLUE,
+        ASSUME_RIGHT_FRONT_BLUE,
+        ASSUME_RIGHT_BACK_RED,
+        ASSUME_RIGHT_FRONT_RED,
+
+        DETECT_LEFT_BACK_BLUE,
+        DETECT_LEFT_FRONT_BLUE,
+        DETECT_LEFT_BACK_RED,
+        DETECT_LEFT_FRONT_RED,
         GO_PARK,GO_PARK_DROP_YELLOWPIXEL,
 
         // all TEST states
@@ -509,6 +585,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
     static final double     P_TURN_GAIN            = 0.02;     // Larger is more responsive, but also less stable
     static final double     P_DRIVE_GAIN           = 0.03;     // Larger is more responsive, but also less stable
 
+    static final double WRIST_POS_AT_LOW_BAR = 0.2;
     static final boolean TEST_ONLY = false;
 
     Arm arm = new Arm(this);

@@ -88,6 +88,11 @@ public class Arm {
         moveToDegree(deg);
     }
 
+    public void moveArmUpMore() {
+        deg = 180;
+        moveToDegree(deg);
+    }
+
     public void moveArmDown() {
         deg = 0.0;
         moveToDegree(deg);
@@ -164,7 +169,8 @@ public class Arm {
         arm_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         arm_left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        if ((power < 0) && (deg > 0)
+        // TODO: allows pushing the arm down for now
+        if (true || (power < 0) && (deg > 0)
             || (power > 0) && (deg < 210)) {
             arm_right.setPower(power);
             arm_left.setPower(power);
