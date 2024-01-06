@@ -141,7 +141,10 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
             switch (currState) {
                 case START_TO_DETECT_POS:
                     holdHeading(TURN_SPEED, 0, 0.1);
-                    cubeIsFound = FoundTeamProp.FOUND_MIDDLE;
+
+                    // uncomment this when we want to test
+//                    cubeIsFound = FoundTeamProp.FOUND_MIDDLE;
+
                     switch(cubeIsFound) {
                         case FOUND_MIDDLE:
                             nextState = FSMState.DETECT_MIDDLE;
@@ -175,10 +178,10 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
                     // go to the backboard
                     if (isBack) {
-                        driveKeepHeading(0.5, 1.0, sideMul * 90);
+                        driveKeepHeading(1, 0.5, sideMul * 90);
 
                     } else {
-                        driveKeepHeading(0.5, 2.2, sideMul * 90);
+                        driveKeepHeading(1, 1.1, sideMul * 90);
 
                     }
 
@@ -186,6 +189,8 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     arm.moveArmUp();
 //                    wrist.go_to_position(WRIST_POS_AT_LOW_BAR);
                     claw.openClaw();
+                    waitRuntime(0.5);
+                    arm.moveArmDown();
 
                     nextState = FSMState.DONE;
 
@@ -233,35 +238,41 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
                         // go back ready to park
                         driveStraight(DRIVE_SPEED*3, -(17), 0.0);
-                        driveStraight(DRIVE_SPEED*1, 6, 0.0);
+                        driveStraight(DRIVE_SPEED*1, 2, 0.0);
 
                         turnToHeading(TURN_SPEED*2, sideMul * -90);
 
                         if (isBack) {
-                            driveKeepHeading(0.5, 1.0, sideMul * 90);
+                            driveKeepHeading(1.0, 0.3, sideMul * 90);
 
                         } else{
-                            driveKeepHeading(0.5, 1.0, sideMul * 90);
-                            driveKeepHeading(0.5, 1.0, sideMul * 90);
+                            driveKeepHeading(1.0, 0.7, sideMul * 90);
+                            waitRuntime(0.5);
+                            driveKeepHeading(1.0, 0.3, sideMul * 90);
 
                         }
                         waitRuntime(0.5);
 
                         if (currState == FSMState.DETECT_LEFT_BACK_BLUE || currState == FSMState.DETECT_LEFT_FRONT_BLUE) {
-                            driveKeepHeading(1, .35, 0);
+                            driveKeepHeading(1, 0.4, 0);
                         } else {
-                            driveKeepHeading(1, 0.35, 0);
+                            driveKeepHeading(1, 0.4, 0);
 
                         }
 
+                    driveKeepHeading(1.0, 0.25, sideMul * 90);
 
-                        // and then drop yellow pixel
-                        arm.moveArmUp();
+
+
+                    // and then drop yellow pixel
+                    arm.moveArmUp();
 //                    wrist.go_to_position(WRIST_POS_AT_LOW_BAR);
 
                     claw.openClaw();
+                    waitRuntime(0.5);
+                    arm.moveArmDown();
 
-                        nextState = FSMState.DONE;
+                    nextState = FSMState.DONE;
 
 
                         break;
@@ -335,6 +346,8 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 //                    wrist.go_to_position(WRIST_POS_AT_LOW_BAR);
 
                     claw.openClaw();
+                    waitRuntime(0.5);
+                    arm.moveArmDown();
 
                         nextState = FSMState.DONE;
 
@@ -348,30 +361,37 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
                         // go back ready to park
                         driveStraight(DRIVE_SPEED*3, -(17), 0.0);
-                        driveStraight(DRIVE_SPEED*1, 6, 0.0);
+                        driveStraight(DRIVE_SPEED*1, 2, 0.0);
 
                         // face behind the back board
                         turnToHeading(TURN_SPEED*2, sideMul * -90);
 
                         // go back
-                        driveKeepHeading(0.5, 1.0, sideMul * 90);
-                        driveKeepHeading(0.5, 1.0, sideMul * 90);
+                    driveKeepHeading(1.0, 0.7, sideMul * 90);
+                    waitRuntime(0.5);
+                    driveKeepHeading(1.0, 0.35, sideMul * 90);
+
                         waitRuntime(0.5);
 
                         if (currState == FSMState.ASSUME_RIGHT_FRONT_BLUE) {
                             // right front blue
-                            driveKeepHeading(1, 0.5, 0);
+                            driveKeepHeading(1, 0.4, 0);
                         } else {
                             // left front red
                             // longer because red is further down
-                            driveKeepHeading(1, 0.7, 0);
+                            driveKeepHeading(1, 0.6, 0);
                         }
 
-                        // and then drop yellow pixel
+                    driveKeepHeading(1.0, 0.25, sideMul * 90);
+
+
+                    // and then drop yellow pixel
                         arm.moveArmUp();
 //                    wrist.go_to_position(WRIST_POS_AT_LOW_BAR);
 
                     claw.openClaw();
+                    waitRuntime(0.5);
+                    arm.moveArmDown();
 
                         nextState = FSMState.DONE;
 
@@ -456,7 +476,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     break;
 
                 case TEST_DRIVE_KEEP_HEADING:
-                    driveKeepHeading(DRIVE_KEEP_HEADING_SPEED, 1, 90);
+                    driveKeepHeading(MUL_DRIVE_KEEP_HEADING_POWER, 1, 90);
                     nextState = FSMState.DONE;
                     break;
 
@@ -574,7 +594,9 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
     // These constants define the desired driving/control characteristics
     // They can/should be tweaked to suit the specific robot drive train.
     static final double     DRIVE_SPEED             = 0.2/DRIVE_GEAR_REDUCTION;     // Max driving speed for better distance accuracy.
-    static final double DRIVE_KEEP_HEADING_SPEED = 0.5;
+    static final double MUL_DRIVE_KEEP_HEADING_POWER = 0.5;
+    static final double MUL_DRIVE_KEEP_HEADING_SEC = 2;
+
     static final double     TURN_SPEED              = 0.1/DRIVE_GEAR_REDUCTION;     // Max Turn speed to limit turn rate
     static final double     HEADING_THRESHOLD       = 1.0 ;    // How close must the heading get to the target before moving to next step.
     // Requiring more accuracy (a smaller number) will often make the turn take longer to get into the final position.
@@ -904,6 +926,8 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
     }
 
     public void driveKeepHeading(double power, double seconds, double direction_deg) {
+        power *= MUL_DRIVE_KEEP_HEADING_POWER;
+        seconds *= MUL_DRIVE_KEEP_HEADING_SEC;
 
         // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
         double x_ref = -Math.sin(direction_deg / 180 * Math.PI);

@@ -179,7 +179,7 @@ public class HeadlessOpMode extends LinearOpMode {
             }
 
             if(gamepad2.left_bumper) {
-                if (arm.isArmUp()) {
+                if ( false && arm.isArmUp()) {
                     claw.openClaw();
                     arm.moveArmDown();
                     wrist.wristDown();
@@ -195,7 +195,7 @@ public class HeadlessOpMode extends LinearOpMode {
                 imu.resetYaw();
                 lastHeading = 0.0;
                 targetHeading = 0.0;
-                waitRuntime(0.1);
+                waitRuntime(0.3);
             }
 
             if (gamepad2.x) {

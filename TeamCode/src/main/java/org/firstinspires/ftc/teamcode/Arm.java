@@ -84,7 +84,7 @@ public class Arm {
     }
 
     public void moveArmUp() {
-        deg = 140;
+        deg = 150;
         moveToDegree(deg);
     }
 
@@ -115,7 +115,8 @@ public class Arm {
 
     public void moveToDegree(double deg) {
         double targetPos = degToPosition(deg);
-        boolean isGoingUp = targetPos > arm_right.getCurrentPosition();
+//        boolean isGoingUp = targetPos > arm_right.getCurrentPosition();
+        boolean isGoingUp = deg > 120;
 
         arm_right.setTargetPosition((int)targetPos);
         arm_right.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -142,6 +143,9 @@ public class Arm {
 
                 arm_right.setPower(0.1);
                 arm_left.setPower(0.1);
+            } else {
+                arm_right.setPower(power_auto_move);
+                arm_left.setPower(power_auto_move);
             }
 
             // Display drive status for the driver.
@@ -197,6 +201,11 @@ public class Arm {
             } else {
                 arm_right.setPower(0.0);
                 arm_left.setPower(0.0);
+            }
+
+            if (myOpMode.gamepad2.dpad_right) {
+                arm_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                arm_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             }
 
     }
