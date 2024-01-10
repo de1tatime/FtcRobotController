@@ -74,7 +74,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 public class HeadlessOpMode extends LinearOpMode {
 
     static final double HOLD_TIME_HEADING_CORRECTION = 0.1;
-    static final double P_TURN_GAIN = 0.02;
+    static final double P_TURN_GAIN = 0.008;
     static final double     DRIVE_GEAR_REDUCTION    = 5 ;     // No External Gearing.
     static final double     TURN_SPEED              = 0.1/DRIVE_GEAR_REDUCTION;     // Max Turn speed to limit turn rate
 
@@ -179,15 +179,8 @@ public class HeadlessOpMode extends LinearOpMode {
             }
 
             if(gamepad2.left_bumper) {
-                if ( false && arm.isArmUp()) {
-                    claw.openClaw();
-                    arm.moveArmDown();
-                    wrist.wristDown();
-
-                } else {
                     wrist.wristUp();
-                    arm.moveToDegree(140);
-                }
+                    arm.moveToDegree(130);
 
             }
 
@@ -236,7 +229,7 @@ public class HeadlessOpMode extends LinearOpMode {
 //                rightFrontPower = rightBackPower = -gamepad1.right_stick_x;
 //            }
 
-                // consider straffing with left and right trigger
+                // consider strafing with left and right trigger
                 leftFrontPower = x_frame * 0.7 + y_frame * 0.7 + gamepad1.right_trigger - gamepad1.left_trigger;
                 rightBackPower = leftFrontPower;
                 rightFrontPower = -x_frame * 0.7 + y_frame * 0.7 - gamepad1.right_trigger + gamepad1.left_trigger;
@@ -252,10 +245,10 @@ public class HeadlessOpMode extends LinearOpMode {
 
             // go turn
                 if (Math.abs (gamepad1.right_stick_x) > 0.1) {
-                    leftFrontPower += gamepad1.right_stick_x * 0.6;
-                    leftBackPower += gamepad1.right_stick_x * 0.6;
-                    rightFrontPower += -gamepad1.right_stick_x * 0.6;
-                    rightBackPower += -gamepad1.right_stick_x * 0.6;
+                    leftFrontPower += gamepad1.right_stick_x * 0.5;
+                    leftBackPower += gamepad1.right_stick_x * 0.5;
+                    rightFrontPower += -gamepad1.right_stick_x * 0.5;
+                    rightBackPower += -gamepad1.right_stick_x * 0.5;
 
                     // save the targetHeading everytime we have actions on the right joystick
                     targetHeading = getHeading();

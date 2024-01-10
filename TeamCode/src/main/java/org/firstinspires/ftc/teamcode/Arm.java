@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class Arm {
 
@@ -118,10 +119,12 @@ public class Arm {
 //        boolean isGoingUp = targetPos > arm_right.getCurrentPosition();
         boolean isGoingUp = deg > 120;
 
-        arm_right.setTargetPosition((int)targetPos);
+
+        arm_right.setTargetPosition(((int)targetPos));
         arm_right.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        arm_left.setTargetPosition((int)targetPos);
+
+        arm_left.setTargetPosition(((int)targetPos));
         arm_left.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         // Set the required driving speed  (must be positive for RUN_TO_POSITION)
@@ -189,11 +192,7 @@ public class Arm {
     public void listen() {
 
         // move arm according to the left stick y
-            double fibulaPower = -myOpMode.gamepad2.left_stick_y;
-            if (Math.abs(fibulaPower) > 0.1) {
-                fibula.setPower(-myOpMode.gamepad2.left_stick_y);
 
-            }
 
             double power = -myOpMode.gamepad2.right_stick_y;
             if (Math.abs(power) > 0.1) {
