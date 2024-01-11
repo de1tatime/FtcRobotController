@@ -169,8 +169,13 @@ public class HeadlessOpMode extends LinearOpMode {
         double max;
         double drone_launcher_pos = 0.6;
         String StrafeToString = null;
+        boolean is_turning_detected = false;
+
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+
+            // assume no turning
+            is_turning_detected = false;
 
             arm.listen();
             claw.listen();
@@ -245,13 +250,14 @@ public class HeadlessOpMode extends LinearOpMode {
 
             // go turn
                 if (Math.abs (gamepad1.right_stick_x) > 0.1) {
-                    leftFrontPower += gamepad1.right_stick_x * 0.5;
-                    leftBackPower += gamepad1.right_stick_x * 0.5;
-                    rightFrontPower += -gamepad1.right_stick_x * 0.5;
-                    rightBackPower += -gamepad1.right_stick_x * 0.5;
+                    leftFrontPower += gamepad1.right_stick_x * 0.7;
+                    leftBackPower += gamepad1.right_stick_x * 0.7;
+                    rightFrontPower += -gamepad1.right_stick_x * 0.7;
+                    rightBackPower += -gamepad1.right_stick_x * 0.7;
 
-                    // save the targetHeading everytime we have actions on the right joystick
-                    targetHeading = getHeading();
+
+                    is_turning_detected = true;
+
                 }
 
 
@@ -313,6 +319,11 @@ public class HeadlessOpMode extends LinearOpMode {
                 rightFrontDrive.setPower(rightFrontPower * mulPower);
                 leftBackDrive.setPower(leftBackPower * mulPower );
                 rightBackDrive.setPower(rightBackPower * mulPower);
+
+                if (is_turning_detected) {
+                    // save the targetHeading everytime we have actions on the right joystick
+                    targetHeading = getHeading();
+                }
 
             } else {
                 // braking here by setPower to zero;
