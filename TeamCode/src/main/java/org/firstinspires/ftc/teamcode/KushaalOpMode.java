@@ -251,8 +251,5 @@
              telemetry.addData("Speed Value:", mulPower);
              telemetry.update();
          }
- 
- 
-        
      }
  }

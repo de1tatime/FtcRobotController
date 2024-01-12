@@ -192,6 +192,12 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     waitRuntime(0.5);
                     arm.moveArmDown();
 
+                    if (isBack) {
+                        driveKeepHeading(1.5, 0.35, sideMul * 180);
+                        driveKeepHeading(1.5, 0.15, sideMul * 90);
+
+                    }
+
                     nextState = FSMState.DONE;
 
                     break;
@@ -254,9 +260,9 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                         waitRuntime(0.5);
 
                         if (currState == FSMState.DETECT_LEFT_BACK_BLUE || currState == FSMState.DETECT_LEFT_FRONT_BLUE) {
-                            driveKeepHeading(1, 0.4, 0);
+                            driveKeepHeading(1, 0.55, 0);
                         } else {
-                            driveKeepHeading(1, 0.4, 0);
+                            driveKeepHeading(1, 0.55, 0);
 
                         }
 
@@ -271,6 +277,16 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     claw.openClaw();
                     waitRuntime(0.5);
                     arm.moveArmDown();
+
+                    // if on the back, we want to park
+                    if (
+                            currState == FSMState.DETECT_LEFT_BACK_BLUE
+                            || currState == FSMState.ASSUME_RIGHT_BACK_RED
+                    ) {
+                        driveKeepHeading(1.5, 0.25, sideMul * 180);
+                        driveKeepHeading(1.5, 0.15, sideMul * 90);
+
+                    }
 
                     nextState = FSMState.DONE;
 
@@ -333,7 +349,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                         // if blue strfe to the front for 0.35
                         if (sideMul == 1) {
                             // isBack and Blue, right
-                            driveKeepHeading(1, 0.35, 0);
+                            driveKeepHeading(1, 0.4, 0);
                         } else {
                             // in back and Red  , left
                             driveKeepHeading(1, 0.4, 0);
@@ -349,7 +365,11 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     waitRuntime(0.5);
                     arm.moveArmDown();
 
-                        nextState = FSMState.DONE;
+
+                    driveKeepHeading(1.5, 0.45, sideMul * 180);
+                    driveKeepHeading(1.5, 0.15, sideMul * 90);
+
+                    nextState = FSMState.DONE;
 
                         break;
 
@@ -396,9 +416,6 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                         nextState = FSMState.DONE;
 
                         break;
-
-
-
 
 
                 case GO_PARK_DROP_YELLOWPIXEL:
