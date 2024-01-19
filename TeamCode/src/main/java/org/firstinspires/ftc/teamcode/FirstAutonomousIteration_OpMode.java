@@ -178,10 +178,10 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
                     // go to the backboard
                     if (isBack) {
-                        driveKeepHeading(1, 0.5, sideMul * 90);
+                        driveKeepHeading(1, 0.5+BACK_DROP_ADD_SEC, sideMul * 90);
 
                     } else {
-                        driveKeepHeading(1, 1.1, sideMul * 90);
+                        driveKeepHeading(1, 1.1+BACK_DROP_ADD_SEC, sideMul * 90);
 
                     }
 
@@ -193,6 +193,8 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     arm.moveArmDown();
 
                     if (isBack) {
+                        // go a little bit opposite of the backboard and go park
+                        driveKeepHeading(1.5, 0.1, sideMul * -90);
                         driveKeepHeading(1.5, 0.35, sideMul * 180);
                         driveKeepHeading(1.5, 0.15, sideMul * 90);
 
@@ -244,7 +246,14 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
                         // go back ready to park
                         driveStraight(DRIVE_SPEED*3, -(17), 0.0);
-                        driveStraight(DRIVE_SPEED*1, 2, 0.0);
+                        if (isBack) {
+                            driveStraight(DRIVE_SPEED*1, 2, 0.0);
+
+                        } else {
+                            // go further more to avoid the truss
+                            driveStraight(DRIVE_SPEED*1, 4, 0.0);
+
+                        }
 
                         turnToHeading(TURN_SPEED*2, sideMul * -90);
 
@@ -266,7 +275,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
                         }
 
-                    driveKeepHeading(1.0, 0.25, sideMul * 90);
+                    driveKeepHeading(1.0, 0.25+BACK_DROP_ADD_SEC, sideMul * 90);
 
 
 
@@ -283,6 +292,8 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                             currState == FSMState.DETECT_LEFT_BACK_BLUE
                             || currState == FSMState.ASSUME_RIGHT_BACK_RED
                     ) {
+                        // go a little bit opposite of the backboard and go park
+                        driveKeepHeading(1.5, 0.1, sideMul * -90);
                         driveKeepHeading(1.5, 0.25, sideMul * 180);
                         driveKeepHeading(1.5, 0.15, sideMul * 90);
 
@@ -355,7 +366,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                             driveKeepHeading(1, 0.4, 0);
                         }
 
-                        driveKeepHeading(0.8, 0.60, sideMul * 90);
+                        driveKeepHeading(0.8, 0.60+BACK_DROP_ADD_SEC, sideMul * 90);
 
                         // and then drop yellow pixel
                         arm.moveArmUp();
@@ -366,6 +377,8 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     arm.moveArmDown();
 
 
+                    // go a little bit opposite of the backboard and go park
+                    driveKeepHeading(1.5, 0.1, sideMul * -90);
                     driveKeepHeading(1.5, 0.45, sideMul * 180);
                     driveKeepHeading(1.5, 0.15, sideMul * 90);
 
@@ -381,7 +394,15 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
                         // go back ready to park
                         driveStraight(DRIVE_SPEED*3, -(17), 0.0);
-                        driveStraight(DRIVE_SPEED*1, 2, 0.0);
+
+                        if (isBack) {
+                            driveStraight(DRIVE_SPEED*1, 2, 0.0);
+
+                        } else {
+                            // go little further to avoid the truss
+                            driveStraight(DRIVE_SPEED*1, 4, 0.0);
+
+                        }
 
                         // face behind the back board
                         turnToHeading(TURN_SPEED*2, sideMul * -90);
@@ -393,16 +414,10 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
                         waitRuntime(0.5);
 
-                        if (currState == FSMState.ASSUME_RIGHT_FRONT_BLUE) {
-                            // right front blue
-                            driveKeepHeading(1, 0.4, 0);
-                        } else {
-                            // left front red
-                            // longer because red is further down
-                            driveKeepHeading(1, 0.6, 0);
-                        }
+                        // go to the right backdrop
+                        driveKeepHeading(1, 0.6, 0);
 
-                    driveKeepHeading(1.0, 0.25, sideMul * 90);
+                    driveKeepHeading(1.0, 0.25+BACK_DROP_ADD_SEC, sideMul * 90);
 
 
                     // and then drop yellow pixel
@@ -626,6 +641,8 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
     static final double WRIST_POS_AT_LOW_BAR = 0.2;
     static final boolean TEST_ONLY = false;
+
+    static final double BACK_DROP_ADD_SEC = 0.3;
 
     Arm arm = new Arm(this);
     Claw claw       = new Claw(this);

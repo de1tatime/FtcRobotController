@@ -44,7 +44,7 @@ public class Arm {
     static final double GEAR_RATIO = 40 / 10;
 
 
-    private double power_auto_move = 1.0;
+    private double power_auto_move = 0.6;
 
     static final double THRESHOLD_TO_SLOW_IN_DEG_HI = 70;
     static final double THRESHOLD_TO_SLOW_IN_DEG_LO = 40;
