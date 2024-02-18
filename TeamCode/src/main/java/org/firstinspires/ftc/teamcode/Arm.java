@@ -146,8 +146,8 @@ public class Arm {
                             || arm_left.getCurrentPosition() < thresh_slow_deg_lo)
             )) {
 
-                arm_right.setPower(0.1);
-                arm_left.setPower(0.1);
+                arm_right.setPower(0.05);
+                arm_left.setPower(0.05);
             } else {
                 arm_right.setPower(power_auto_move);
                 arm_left.setPower(power_auto_move);
@@ -172,6 +172,7 @@ public class Arm {
         myOpMode.telemetry.addData("Arm pos Left/Right", "%4d / %4d",
                 arm_left.getCurrentPosition(),
                 arm_right.getCurrentPosition());
+
     }
 
     public void moveArmByPower(double power) {
@@ -204,10 +205,19 @@ public class Arm {
                 arm_left.setPower(0.0);
             }
 
-            if (myOpMode.gamepad2.dpad_right) {
+            if (myOpMode.gamepad2.start) {
                 arm_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 arm_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             }
+
+        if(myOpMode.gamepad2.right_bumper) {
+            moveToDegree(0);
+        }
+
+        if(myOpMode.gamepad2.left_bumper) {
+            moveToDegree(140);
+        }
+
 
     }
 }
