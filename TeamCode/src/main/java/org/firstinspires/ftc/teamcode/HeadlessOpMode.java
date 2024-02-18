@@ -74,7 +74,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 public class HeadlessOpMode extends LinearOpMode {
 
     static final double HOLD_TIME_HEADING_CORRECTION = 0.1;
-    static final double P_TURN_GAIN = 0.02;
+    static final double P_TURN_GAIN = 0.008;
     static final double     DRIVE_GEAR_REDUCTION    = 5 ;     // No External Gearing.
     static final double     TURN_SPEED              = 0.1/DRIVE_GEAR_REDUCTION;     // Max Turn speed to limit turn rate
 
@@ -90,7 +90,6 @@ public class HeadlessOpMode extends LinearOpMode {
     private DcMotor rightBackDrive = null;
     private Servo dronelaunch = null;
     private double mulPower = 0.5;
-    private double turnMulPower = .5;
     private double heading = 0.0;
     private double x_ref = 0.0;
     private double y_ref = 0.0;
@@ -170,8 +169,13 @@ public class HeadlessOpMode extends LinearOpMode {
         double max;
         double drone_launcher_pos = 0.6;
         String StrafeToString = null;
+        boolean is_turning_detected = false;
+
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+
+            // assume no turning
+            is_turning_detected = false;
 
             arm.listen();
             claw.listen();
@@ -180,15 +184,8 @@ public class HeadlessOpMode extends LinearOpMode {
             }
 
             if(gamepad2.left_bumper) {
-                if (arm.isArmUp()) {
-                    claw.openClaw();
-                    arm.moveArmDown();
-                    wrist.wristDown();
-
-                } else {
                     wrist.wristUp();
-                    arm.moveToDegree(140);
-                }
+                    arm.moveToDegree(130);
 
             }
 
@@ -196,7 +193,7 @@ public class HeadlessOpMode extends LinearOpMode {
                 imu.resetYaw();
                 lastHeading = 0.0;
                 targetHeading = 0.0;
-                waitRuntime(0.1);
+                waitRuntime(0.3);
             }
 
             if (gamepad2.x) {
@@ -237,7 +234,7 @@ public class HeadlessOpMode extends LinearOpMode {
 //                rightFrontPower = rightBackPower = -gamepad1.right_stick_x;
 //            }
 
-                // consider straffing with left and right trigger
+                // consider strafing with left and right trigger
                 leftFrontPower = x_frame * 0.7 + y_frame * 0.7 + gamepad1.right_trigger - gamepad1.left_trigger;
                 rightBackPower = leftFrontPower;
                 rightFrontPower = -x_frame * 0.7 + y_frame * 0.7 - gamepad1.right_trigger + gamepad1.left_trigger;
@@ -253,13 +250,14 @@ public class HeadlessOpMode extends LinearOpMode {
 
             // go turn
                 if (Math.abs (gamepad1.right_stick_x) > 0.1) {
-                    leftFrontPower += gamepad1.right_stick_x * turnMulPower;
-                    leftBackPower += gamepad1.right_stick_x * turnMulPower;
-                    rightFrontPower += -gamepad1.right_stick_x * turnMulPower;
-                    rightBackPower += -gamepad1.right_stick_x * turnMulPower;
+                    leftFrontPower += gamepad1.right_stick_x * 0.7;
+                    leftBackPower += gamepad1.right_stick_x * 0.7;
+                    rightFrontPower += -gamepad1.right_stick_x * 0.7;
+                    rightBackPower += -gamepad1.right_stick_x * 0.7;
 
-                    // save the targetHeading everytime we have actions on the right joystick
-                    targetHeading = getHeading();
+
+                    is_turning_detected = true;
+
                 }
 
 
@@ -286,17 +284,6 @@ public class HeadlessOpMode extends LinearOpMode {
                mulPower-=0.1;
                waitRuntime(0.2);
            }
-            if(gamepad1.dpad_up){
-                turnMulPower+=0.1;
-                waitRuntime(0.2);
-            }
-            // This part of this code is to increase the speed of the motor a little.
-            if(gamepad1.dpad_down){
-                turnMulPower-=0.1;
-                waitRuntime(0.2);
-            }
-
-
 
             if (mulPower > 1) {
                mulPower = 1;
@@ -306,8 +293,6 @@ public class HeadlessOpMode extends LinearOpMode {
                mulPower = 0.2;
         }
 
-            turnMulPower = turnMulPower < 0.2 ? 0.2 : turnMulPower;
-            turnMulPower = turnMulPower > 1.0 ? 1.0 : turnMulPower;
 
 
 
@@ -334,6 +319,11 @@ public class HeadlessOpMode extends LinearOpMode {
                 rightFrontDrive.setPower(rightFrontPower * mulPower);
                 leftBackDrive.setPower(leftBackPower * mulPower );
                 rightBackDrive.setPower(rightBackPower * mulPower);
+
+                if (is_turning_detected) {
+                    // save the targetHeading everytime we have actions on the right joystick
+                    targetHeading = getHeading();
+                }
 
             } else {
                 // braking here by setPower to zero;
@@ -385,5 +375,5 @@ public class HeadlessOpMode extends LinearOpMode {
     }
 
 
-
+//easter egg!!! :-D
 }

@@ -128,10 +128,10 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
         // Wait for the game to start (Display Gyro value while waiting)
 
 
-        nextState = FirstAutonomousIteration.FSMState.START_TO_DETECT_POS;
-//        nextState = FSMState.TEST_DRAW_TWO_PICK_ONE;
+        nextState = FSMState.START_TO_DETECT_POS;
+//        nextState = FSMState.TEST_DRIVE_KEEP_HEADING;
 
-        while (nextState != FirstAutonomousIteration.FSMState.DONE) {
+        while (nextState != FSMState.DONE) {
             // save the current heading
             ctx.setHeading(getHeading());
 
@@ -141,40 +141,71 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
             switch (currState) {
                 case START_TO_DETECT_POS:
                     holdHeading(TURN_SPEED, 0, 0.1);
+
+                    // uncomment this when we want to test
+//                    cubeIsFound = FoundTeamProp.FOUND_MIDDLE;
+
                     switch(cubeIsFound) {
                         case FOUND_MIDDLE:
-                            nextState = FirstAutonomousIteration.FSMState.DETECT_MIDDLE;
+                            nextState = FSMState.DETECT_MIDDLE;
                             break;
                         case FOUND_LEFT:
-                            nextState = FirstAutonomousIteration.FSMState.DETECT_LEFT;
+                            nextState = FSMState.DETECT_LEFT;
                             break;
                         default:
-                            nextState = FirstAutonomousIteration.FSMState.ASSUME_RIGHT;
+                            nextState = FSMState.ASSUME_RIGHT;
                             break;
                     }
                     break;
 
                 case DETECT_MIDDLE:
-                    // go place the pixel and go back to starting position
-                    driveStraight(DRIVE_SPEED*3, 22, 0.0);
-
-                    // turn right, goes forward a little, place, and go back to initial state
-                    targetHeading = -20;
-                    turnToHeading(TURN_SPEED, targetHeading);
-                    driveStraight(DRIVE_SPEED, 2.8, targetHeading);
+                    // go ram the team prop and place the pixel
+                    driveStraight(DRIVE_SPEED*2, 32, 0.0);
+                    driveStraight(DRIVE_SPEED*2, -7, 0.0);
 
                     dropTwoPickOne();
-                    driveStraight(DRIVE_SPEED, -(2.8-MOVE_BACK_AFTER_DROP), targetHeading);
                     turnToHeading(TURN_SPEED, 0);
 
-                    // go back ready to park
-                    driveStraight(DRIVE_SPEED*3, -(22), 0.0);
-                    waitRuntime(1);
-                    cubeIsFound = FirstAutonomousIteration.FoundTeamProp.FOUND_MIDDLE;
-                    nextState = FirstAutonomousIteration.FSMState.GO_PARK_DROP_YELLOWPIXEL;
+                    // go forward
+                    driveStraight(DRIVE_SPEED*2, 2, 0.0);
+
+                    turnToHeading(TURN_SPEED*2, sideMul * -90);
+                    driveKeepHeading(1, 0.15, 0);
+                    waitRuntime(0.1);
+//                    driveLateral(DRIVE_SPEED*2, 10, -90);
+
+
+
+                    // go to the backboard
+                    if (isBack) {
+                        driveKeepHeading(1, 0.5+BACK_DROP_ADD_SEC, sideMul * 90);
+
+                    } else {
+                        driveKeepHeading(1, 1.1+BACK_DROP_ADD_SEC, sideMul * 90);
+
+                    }
+
+                    // and then drop yellow pixel
+                    arm.moveArmUp();
+//                    wrist.go_to_position(WRIST_POS_AT_LOW_BAR);
+                    claw.openClaw();
+                    waitRuntime(0.5);
+                    arm.moveArmDown();
+
+                    if (isBack) {
+                        // go a little bit opposite of the backboard and go park
+                        driveKeepHeading(1.5, 0.1, sideMul * -90);
+                        driveKeepHeading(1.5, 0.35, sideMul * 180);
+                        driveKeepHeading(1.5, 0.15, sideMul * 90);
+
+                    }
+
+                    nextState = FSMState.DONE;
+
                     break;
 
                 case DETECT_LEFT:
+
                     driveStraight(DRIVE_SPEED*3, 17, 0.0);
 
                     // turn left, goes forward a little, place, and go back to initial state
@@ -186,15 +217,112 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     dropTwoPickOne();
                     driveStraight(DRIVE_SPEED, -(2.8-MOVE_BACK_AFTER_DROP), targetHeading);
 
-                    turnToHeading(TURN_SPEED*2, 0);
-                    holdHeading(TURN_SPEED, 0, 0.3);
 
-                    // go back ready to park
-                    driveStraight(DRIVE_SPEED*3, -(17), 0.0);
-                    waitRuntime(1);
-                    cubeIsFound = FirstAutonomousIteration.FoundTeamProp.FOUND_LEFT;
-                    nextState = FirstAutonomousIteration.FSMState.GO_PARK_DROP_YELLOWPIXEL;
+
+                    if (isBack) {
+                        if (sideMul == 1) {
+                            nextState = FSMState.DETECT_LEFT_BACK_BLUE;
+                        } else {
+                            nextState = FSMState.DETECT_LEFT_BACK_RED;
+                        }
+
+                    } else {
+                        if (sideMul == 1) {
+                            nextState = FSMState.DETECT_LEFT_FRONT_BLUE;
+                        } else {
+                            nextState = FSMState.DETECT_LEFT_FRONT_RED;
+                        }
+                    }
                     break;
+
+                case ASSUME_RIGHT_BACK_RED:
+                case DETECT_LEFT_BACK_BLUE:
+                case DETECT_LEFT_FRONT_BLUE:
+                case ASSUME_RIGHT_FRONT_RED:
+
+                    // go back to the initial position and
+                    turnToHeading(TURN_SPEED*2, 0);
+                    holdHeading(TURN_SPEED, 0, 0.2);
+
+                        // go back ready to park
+                        driveStraight(DRIVE_SPEED*3, -(17), 0.0);
+                        if (isBack) {
+                            driveStraight(DRIVE_SPEED*1, 2, 0.0);
+
+                        } else {
+                            // go further more to avoid the truss
+                            driveStraight(DRIVE_SPEED*1, 4, 0.0);
+
+                        }
+
+                        turnToHeading(TURN_SPEED*2, sideMul * -90);
+
+                        if (isBack) {
+                            driveKeepHeading(1.0, 0.3, sideMul * 90);
+
+                        } else{
+                            driveKeepHeading(1.0, 0.7, sideMul * 90);
+                            waitRuntime(0.5);
+                            driveKeepHeading(1.0, 0.3, sideMul * 90);
+
+                        }
+                        waitRuntime(0.5);
+
+                        if (currState == FSMState.DETECT_LEFT_BACK_BLUE || currState == FSMState.DETECT_LEFT_FRONT_BLUE) {
+                            driveKeepHeading(1, 0.55, 0);
+                        } else {
+                            driveKeepHeading(1, 0.55, 0);
+
+                        }
+
+                    driveKeepHeading(1.0, 0.25+BACK_DROP_ADD_SEC, sideMul * 90);
+
+
+
+                    // and then drop yellow pixel
+                    arm.moveArmUp();
+//                    wrist.go_to_position(WRIST_POS_AT_LOW_BAR);
+
+                    claw.openClaw();
+                    waitRuntime(0.5);
+                    arm.moveArmDown();
+
+                    // if on the back, we want to park
+                    if (
+                            currState == FSMState.DETECT_LEFT_BACK_BLUE
+                            || currState == FSMState.ASSUME_RIGHT_BACK_RED
+                    ) {
+                        // go a little bit opposite of the backboard and go park
+                        driveKeepHeading(1.5, 0.1, sideMul * -90);
+                        driveKeepHeading(1.5, 0.25, sideMul * 180);
+                        driveKeepHeading(1.5, 0.15, sideMul * 90);
+
+                    }
+
+                    nextState = FSMState.DONE;
+
+
+                        break;
+//                    driveStraight(DRIVE_SPEED*3, 17, 0.0);
+//
+//                    // turn left, goes forward a little, place, and go back to initial state
+//                    targetHeading = 45;
+//                    turnToHeading(TURN_SPEED*2, targetHeading);
+//                    holdHeading(TURN_SPEED, targetHeading, 0.3);
+//                    driveStraight(DRIVE_SPEED, 2.8, targetHeading);
+//
+//                    dropTwoPickOne();
+//                    driveStraight(DRIVE_SPEED, -(2.8-MOVE_BACK_AFTER_DROP), targetHeading);
+//
+//                    turnToHeading(TURN_SPEED*2, 0);
+//                    holdHeading(TURN_SPEED, 0, 0.3);
+//
+//                    // go back ready to park
+//                    driveStraight(DRIVE_SPEED*3, -(17), 0.0);
+//                    waitRuntime(1);
+//                    cubeIsFound = FoundTeamProp.FOUND_LEFT;
+//                    nextState = FSMState.GO_PARK_DROP_YELLOWPIXEL;
+//                    break;
 
                 case ASSUME_RIGHT:
                     driveStraight(DRIVE_SPEED*3, 17, 0.0);
@@ -208,15 +336,101 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     dropTwoPickOne();
                     driveStraight(DRIVE_SPEED, -(2.8-MOVE_BACK_AFTER_DROP), targetHeading);
 
-                    turnToHeading(TURN_SPEED*2, 0);
-                    holdHeading(TURN_SPEED, 0, 0.3);
+                    if (isBack) {
+                        if (sideMul == 1) {
+                            nextState = FSMState.ASSUME_RIGHT_BACK_BLUE;
+                        } else {
+                            nextState = FSMState.ASSUME_RIGHT_BACK_RED;
+                        }
 
-                    // go back ready to park
-                    driveStraight(DRIVE_SPEED*3, -(17), 0.0);
-                    waitRuntime(1);
-                    cubeIsFound = FirstAutonomousIteration.FoundTeamProp.FOUND_RIGHT;
-                    nextState = FirstAutonomousIteration.FSMState.GO_PARK_DROP_YELLOWPIXEL;
+                    } else {
+                        if (sideMul == 1) {
+                            nextState = FSMState.ASSUME_RIGHT_FRONT_BLUE;
+                        } else {
+                            nextState = FSMState.ASSUME_RIGHT_FRONT_RED;
+                        }
+                    }
                     break;
+
+                case ASSUME_RIGHT_BACK_BLUE:
+                case DETECT_LEFT_BACK_RED:
+                        // go straight to the board without going back
+                        turnToHeading(TURN_SPEED*2, sideMul * -90);
+                        //strafe a little to the left and then go to the board
+                        // if blue strfe to the front for 0.35
+                        if (sideMul == 1) {
+                            // isBack and Blue, right
+                            driveKeepHeading(1, 0.4, 0);
+                        } else {
+                            // in back and Red  , left
+                            driveKeepHeading(1, 0.4, 0);
+                        }
+
+                        driveKeepHeading(0.8, 0.60+BACK_DROP_ADD_SEC, sideMul * 90);
+
+                        // and then drop yellow pixel
+                        arm.moveArmUp();
+//                    wrist.go_to_position(WRIST_POS_AT_LOW_BAR);
+
+                    claw.openClaw();
+                    waitRuntime(0.5);
+                    arm.moveArmDown();
+
+
+                    // go a little bit opposite of the backboard and go park
+                    driveKeepHeading(1.5, 0.1, sideMul * -90);
+                    driveKeepHeading(1.5, 0.45, sideMul * 180);
+                    driveKeepHeading(1.5, 0.15, sideMul * 90);
+
+                    nextState = FSMState.DONE;
+
+                        break;
+
+                case ASSUME_RIGHT_FRONT_BLUE:
+                case DETECT_LEFT_FRONT_RED:
+                        // go back to the initial position and
+                        turnToHeading(TURN_SPEED*2, 0);
+                        holdHeading(TURN_SPEED, 0, 0.2);
+
+                        // go back ready to park
+                        driveStraight(DRIVE_SPEED*3, -(17), 0.0);
+
+                        if (isBack) {
+                            driveStraight(DRIVE_SPEED*1, 2, 0.0);
+
+                        } else {
+                            // go little further to avoid the truss
+                            driveStraight(DRIVE_SPEED*1, 4, 0.0);
+
+                        }
+
+                        // face behind the back board
+                        turnToHeading(TURN_SPEED*2, sideMul * -90);
+
+                        // go back
+                    driveKeepHeading(1.0, 0.7, sideMul * 90);
+                    waitRuntime(0.5);
+                    driveKeepHeading(1.0, 0.35, sideMul * 90);
+
+                        waitRuntime(0.5);
+
+                        // go to the right backdrop
+                        driveKeepHeading(1, 0.6, 0);
+
+                    driveKeepHeading(1.0, 0.25+BACK_DROP_ADD_SEC, sideMul * 90);
+
+
+                    // and then drop yellow pixel
+                        arm.moveArmUp();
+//                    wrist.go_to_position(WRIST_POS_AT_LOW_BAR);
+
+                    claw.openClaw();
+                    waitRuntime(0.5);
+                    arm.moveArmDown();
+
+                        nextState = FSMState.DONE;
+
+                        break;
 
 
                 case GO_PARK_DROP_YELLOWPIXEL:
@@ -224,43 +438,50 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                         driveStraight(DRIVE_SPEED * 5, 4, 0);
                         driveLateral(DRIVE_SPEED*2, -51 * sideMul,  0);
                         driveLateral(DRIVE_SPEED*5, -46 * sideMul,  0);
-                        nextState = FirstAutonomousIteration.FSMState.DONE;
+                        nextState = FSMState.DONE;
+                        break;
+                    } else {
+                        driveStraight(DRIVE_SPEED * 5, 4, 0);
+                        turnToHeading(TURN_SPEED *2, sideMul * (-90));
+                        driveKeepHeading(1, 0.5, 90);
+                        waitRuntime(0.1);
+                        driveKeepHeading(1, 0.4, 0);
+
+                        nextState = FSMState.DONE;
                         break;
                     }
 
-                    //Drive straight until ready to scan the apriltag.
-                    turnToHeading(TURN_SPEED *6, sideMul * (-90));
-                    driveStraight(DRIVE_SPEED * 6, -28, sideMul * (-90));
-                    holdHeading(TURN_SPEED, sideMul* (-90), 0.1);
-
-                    if (cubeIsFound == FirstAutonomousIteration.FoundTeamProp.FOUND_MIDDLE) {
-                        //Drive straight until ready to scan the apriltag.
-                        //Then strafe inline with the backboard according to the position of where the team prop was found.
-                        holdHeading(TURN_SPEED,-90*sideMul,0.4);
-                        driveLateral(DRIVE_SPEED * 5, -26.5 * sideMul, sideMul * (-90));
-
-                    } else if (cubeIsFound == FirstAutonomousIteration.FoundTeamProp.FOUND_LEFT) {                        //Drive straight until ready to scan the apriltag.
-                        //Drive straight until ready to scan the apriltag.
-                        //Then strafe inline with the backboard according to the position of where the team prop was found.
-                        holdHeading(TURN_SPEED,-90*sideMul,0.4);
-                        driveLateral(DRIVE_SPEED * 5, -20* sideMul, sideMul * (-90));
-
-                    } else if (cubeIsFound == FirstAutonomousIteration.FoundTeamProp.FOUND_RIGHT) {
-                        //Then strafe inline with the backboard according to the position of where the team prop was found.
-                        holdHeading(TURN_SPEED,-90*sideMul,0.4);
-                        driveLateral(DRIVE_SPEED * 5, -33* sideMul, sideMul * -(90));
-                    }
-
-                    //Go front then face your back to the backdrop
-                    // ;[driveStraight(DRIVE_SPEED * 10, -10, sideMul * (-90), true, false);
-                    //Drop yellow pixel.
-                    driveStraight(DRIVE_SPEED * 2, -6, sideMul * -(90));
-                    arm.moveArmUp();
-                    claw.openClaw();
-
-                    nextState = FirstAutonomousIteration.FSMState.DONE;
-
-                    break;
+//                    driveStraight(DRIVE_SPEED * 6, -28, sideMul * (-90));
+//                    holdHeading(TURN_SPEED, sideMul* (-90), 0.1);
+//
+//                    if (cubeIsFound == FoundTeamProp.FOUND_MIDDLE) {
+//                        //Drive straight until ready to scan the apriltag.
+//                        //Then strafe inline with the backboard according to the position of where the team prop was found.
+//                        holdHeading(TURN_SPEED,-90*sideMul,0.4);
+//                        driveLateral(DRIVE_SPEED * 5, -26.5 * sideMul, sideMul * (-90));
+//
+//                    } else if (cubeIsFound == FoundTeamProp.FOUND_LEFT) {                        //Drive straight until ready to scan the apriltag.
+//                        //Drive straight until ready to scan the apriltag.
+//                        //Then strafe inline with the backboard according to the position of where the team prop was found.
+//                        holdHeading(TURN_SPEED,-90*sideMul,0.4);
+//                        driveLateral(DRIVE_SPEED * 5, -20* sideMul, sideMul * (-90));
+//
+//                    } else if (cubeIsFound == FoundTeamProp.FOUND_RIGHT) {
+//                        //Then strafe inline with the backboard according to the position of where the team prop was found.
+//                        holdHeading(TURN_SPEED,-90*sideMul,0.4);
+//                        driveLateral(DRIVE_SPEED * 5, -33* sideMul, sideMul * -(90));
+//                    }
+//
+//                    //Go front then face your back to the backdrop
+//                    // ;[driveStraight(DRIVE_SPEED * 10, -10, sideMul * (-90), true, false);
+//                    //Drop yellow pixel.
+//                    driveStraight(DRIVE_SPEED * 2, -6, sideMul * -(90));
+//                    arm.moveArmUp();
+//                    claw.openClaw();
+//
+//                    nextState = FSMState.DONE;
+//
+//                    break;
 
                 case GO_PARK:
                     turnToHeading(TURN_SPEED*10, sideMul * (-90));
@@ -272,19 +493,26 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                         driveStraight(DRIVE_SPEED*11, -61, sideMul * (-90));
                     }
 
-                    nextState = FirstAutonomousIteration.FSMState.DONE;
+                    nextState = FSMState.DONE;
                     break;
 
                 case TEST_DRAW_TWO_PICK_ONE:
                     dropTwoPickOne();
-                    nextState = FirstAutonomousIteration.FSMState.DONE;
+                    nextState = FSMState.DONE;
                     break;
 
                 case TEST_LATERAL_RIGHT:
                     targetHeading = getHeading();
                     driveLateral(DRIVE_SPEED*5, 3, targetHeading);
-                    nextState = FirstAutonomousIteration.FSMState.DONE;
+                    nextState = FSMState.DONE;
                     break;
+
+                case TEST_DRIVE_KEEP_HEADING:
+                    driveKeepHeading(MUL_DRIVE_KEEP_HEADING_POWER, 1, 90);
+                    nextState = FSMState.DONE;
+                    break;
+
+
             }
         }
         ctx.setHeading(getHeading());
@@ -312,7 +540,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
         FOUND_NONE, FOUND_LEFT, FOUND_MIDDLE, FOUND_RIGHT;
     }
 
-    public String getFoundTeamPropString(FirstAutonomousIteration.FoundTeamProp foundTeamProp) {
+    public String getFoundTeamPropString(FoundTeamProp foundTeamProp) {
         switch(foundTeamProp) {
             case FOUND_NONE:
                 return "None";
@@ -332,17 +560,28 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
         // initial state
         START_TO_DETECT_POS,
         DETECT_LEFT, DETECT_MIDDLE, ASSUME_RIGHT,
+        ASSUME_RIGHT_BACK_BLUE,
+        ASSUME_RIGHT_FRONT_BLUE,
+        ASSUME_RIGHT_BACK_RED,
+        ASSUME_RIGHT_FRONT_RED,
+
+        DETECT_LEFT_BACK_BLUE,
+        DETECT_LEFT_FRONT_BLUE,
+        DETECT_LEFT_BACK_RED,
+        DETECT_LEFT_FRONT_RED,
         GO_PARK,GO_PARK_DROP_YELLOWPIXEL,
 
         // all TEST states
         TEST_DRAW_TWO_PICK_ONE,
         TEST_LATERAL_RIGHT,
+
+        TEST_DRIVE_KEEP_HEADING,
         DONE;
     }
 
-    private FirstAutonomousIteration.FSMState currState = FirstAutonomousIteration.FSMState.UNINITIALIZED;
-    private FirstAutonomousIteration.FSMState prevState = FirstAutonomousIteration.FSMState.UNINITIALIZED;
-    private FirstAutonomousIteration.FSMState nextState = FirstAutonomousIteration.FSMState.UNINITIALIZED;
+    private FSMState currState = FSMState.UNINITIALIZED;
+    private FSMState prevState = FSMState.UNINITIALIZED;
+    private FSMState nextState = FSMState.UNINITIALIZED;
 
     private int sideMul = 1;
     private boolean isBack = false;
@@ -387,6 +626,9 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
     // These constants define the desired driving/control characteristics
     // They can/should be tweaked to suit the specific robot drive train.
     static final double     DRIVE_SPEED             = 0.2/DRIVE_GEAR_REDUCTION;     // Max driving speed for better distance accuracy.
+    static final double MUL_DRIVE_KEEP_HEADING_POWER = 0.5;
+    static final double MUL_DRIVE_KEEP_HEADING_SEC = 2;
+
     static final double     TURN_SPEED              = 0.1/DRIVE_GEAR_REDUCTION;     // Max Turn speed to limit turn rate
     static final double     HEADING_THRESHOLD       = 1.0 ;    // How close must the heading get to the target before moving to next step.
     // Requiring more accuracy (a smaller number) will often make the turn take longer to get into the final position.
@@ -397,7 +639,10 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
     static final double     P_TURN_GAIN            = 0.02;     // Larger is more responsive, but also less stable
     static final double     P_DRIVE_GAIN           = 0.03;     // Larger is more responsive, but also less stable
 
+    static final double WRIST_POS_AT_LOW_BAR = 0.2;
     static final boolean TEST_ONLY = false;
+
+    static final double BACK_DROP_ADD_SEC = 0.3;
 
     Arm arm = new Arm(this);
     Claw claw       = new Claw(this);
@@ -405,7 +650,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
     String msg = "";
 
-    FirstAutonomousIteration.FoundTeamProp cubeIsFound = FirstAutonomousIteration.FoundTeamProp.FOUND_NONE;
+    FoundTeamProp cubeIsFound = FoundTeamProp.FOUND_NONE;
     int cubeIsFoundCount = 0;
 
 
@@ -437,7 +682,8 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
      */
     private VisionPortal visionPortal;
 
-
+    private double leftFrontPower, rightFrontPower;
+    private double leftBackPower, rightBackPower;
 
     public void initHardware() {
         // Initialize the hardware variables. Note that the strings used here must correspond
@@ -611,7 +857,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
     public void detectCube() {
         List<Recognition> currentRecognitions;
-        FirstAutonomousIteration.FoundTeamProp cubeLocationDetected = FirstAutonomousIteration.FoundTeamProp.FOUND_RIGHT;
+        FoundTeamProp cubeLocationDetected = FoundTeamProp.FOUND_RIGHT;
 
         waitRuntime(1);
         currentRecognitions = tfod.getRecognitions();
@@ -639,9 +885,9 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
             // detect middle if getLeft() > 100
             // detect right if not found
             if (recSmallestSize.getLeft() < 120) {
-                cubeLocationDetected = FirstAutonomousIteration.FoundTeamProp.FOUND_LEFT;
+                cubeLocationDetected = FoundTeamProp.FOUND_LEFT;
             } else {
-                cubeLocationDetected = FirstAutonomousIteration.FoundTeamProp.FOUND_MIDDLE;
+                cubeLocationDetected = FoundTeamProp.FOUND_MIDDLE;
             }
 
             telemetry.addData("HiConf: ", String.format("%.2f", recHighestConfidence.getLeft()) + "/" + String.format("%.2f", recHighestConfidence.getRight()));
@@ -653,7 +899,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
         // count the detection
         // increase the confidence count if the same location is detected
         // otherwise decrease the confidence count until zero before changes the perceived location
-        if (cubeIsFound == FirstAutonomousIteration.FoundTeamProp.FOUND_NONE || cubeIsFound == cubeLocationDetected) {
+        if (cubeIsFound == FoundTeamProp.FOUND_NONE || cubeIsFound == cubeLocationDetected) {
             cubeIsFound = cubeLocationDetected;
             cubeIsFoundCount += 1;
             if (cubeIsFoundCount > 3) {
@@ -713,18 +959,95 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
         }
     }
 
-    /**
-     *  Drive in a straight line, on a fixed compass heading (angle), based on encoder counts.
-     *  Move will stop if either of these conditions occur:
-     *  1) Move gets to the desired position
-     *  2) Driver stops the OpMode running.
-     *
-     * @param maxDriveSpeed MAX Speed for forward/rev motion (range 0 to +1.0) .
-     * @param distance   Distance (in inches) to move from current position.  Negative distance means move backward.
-     * @param heading      Absolute Heading Angle (in Degrees) relative to last gyro reset.
-     *                   0 = fwd. +ve is CCW from fwd. -ve is CW from forward.
-     *                   If a relative angle is required, add/subtract from the current robotHeading.
-     */
+    public void driveKeepHeading(double power, double seconds, double direction_deg) {
+        power *= MUL_DRIVE_KEEP_HEADING_POWER;
+        seconds *= MUL_DRIVE_KEEP_HEADING_SEC;
+
+        // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
+        double x_ref = -Math.sin(direction_deg / 180 * Math.PI);
+        double y_ref = Math.cos(direction_deg / 180 * Math.PI);
+        double max;
+
+        double heading = getHeading();
+        double cos_heading = Math.cos(heading/180*Math.PI);
+        double sin_heading = Math.sin(heading/180*Math.PI);
+
+        double x_frame = x_ref * cos_heading + y_ref * sin_heading;
+        double y_frame = -x_ref * sin_heading + y_ref * cos_heading;
+
+        // Combine the joystick requests for each axis-motion to determine each wheel's power.
+        // Set up a variable for each drive wheel to save the power level for telemetry.
+        double leftFrontPower0, rightFrontPower0;
+        double turnSpeed;
+
+
+        // consider straffing with left and right trigger
+        leftFrontPower0 = x_frame * 0.7 + y_frame * 0.7;
+        rightFrontPower0 = -x_frame * 0.7 + y_frame * 0.7;
+
+
+        leftFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        leftBackDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightBackDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        runtime.reset();
+        while (runtime.seconds() < seconds) {
+            // apply correction based on the heading
+            rightBackPower = leftFrontPower = leftFrontPower0;
+            leftBackPower = rightFrontPower = rightFrontPower0;
+
+            turnSpeed = getSteeringCorrection(heading, P_TURN_GAIN);
+            leftFrontPower -= turnSpeed;
+            leftBackPower -= turnSpeed;
+            rightFrontPower += turnSpeed;
+            rightBackPower += turnSpeed;
+
+
+            // Normalize the values so no wheel power exceeds 100%
+            // This ensures that the robot maintains the desired motion.
+            max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
+            max = Math.max(max, Math.abs(leftBackPower));
+            max = Math.max(max, Math.abs(rightBackPower));
+
+            if (max > 1.0) {
+                leftFrontPower /= max;
+                rightFrontPower /= max;
+                leftBackPower /= max;
+                rightBackPower /= max;
+
+            }
+
+            leftFrontDrive.setPower(leftFrontPower * power);
+            rightFrontDrive.setPower(rightFrontPower * power);
+            leftBackDrive.setPower(leftBackPower * power );
+            rightBackDrive.setPower(rightBackPower * power);
+
+            telemetry.addData("left/right power: ", "%.2f/%.2f", leftFrontPower, rightFrontPower);
+            telemetry.update();
+
+        }
+
+        leftFrontDrive.setPower(0);
+        rightFrontDrive.setPower(0);
+        leftBackDrive.setPower(0);
+        rightBackDrive.setPower(0);
+
+    }
+
+        /**
+         *  Drive in a straight line, on a fixed compass heading (angle), based on encoder counts.
+         *  Move will stop if either of these conditions occur:
+         *  1) Move gets to the desired position
+         *  2) Driver stops the OpMode running.
+         *
+         * @param maxDriveSpeed MAX Speed for forward/rev motion (range 0 to +1.0) .
+         * @param distance   Distance (in inches) to move from current position.  Negative distance means move backward.
+         * @param heading      Absolute Heading Angle (in Degrees) relative to last gyro reset.
+         *                   0 = fwd. +ve is CCW from fwd. -ve is CW from forward.
+         *                   If a relative angle is required, add/subtract from the current robotHeading.
+         */
     public void driveStraight(double maxDriveSpeed, double distance, double heading, boolean applyCorrection, boolean lateral) {
 
         leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);

@@ -76,6 +76,11 @@ public class Wrist {
         runToPosition();
     }
 
+    public void go_to_position(double wristPosition) {
+        this.wristPosition = wristPosition;
+        runToPosition();
+    }
+
     public boolean listen() {
 
         // move arm according to the right stick y

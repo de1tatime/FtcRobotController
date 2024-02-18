@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class Arm {
 
@@ -42,7 +43,8 @@ public class Arm {
     static final int COUNTS_PER_REVOLUTION = 288;
     static final double GEAR_RATIO = 40 / 10;
 
-    static double power_auto_move = 1.0;
+
+    private double power_auto_move = 0.6;
 
     static final double THRESHOLD_TO_SLOW_IN_DEG_HI = 70;
     static final double THRESHOLD_TO_SLOW_IN_DEG_LO = 40;
@@ -83,7 +85,12 @@ public class Arm {
     }
 
     public void moveArmUp() {
-        deg = 110;
+        deg = 150;
+        moveToDegree(deg);
+    }
+
+    public void moveArmUpMore() {
+        deg = 180;
         moveToDegree(deg);
     }
 
@@ -109,12 +116,15 @@ public class Arm {
 
     public void moveToDegree(double deg) {
         double targetPos = degToPosition(deg);
-        boolean isGoingUp = targetPos > arm_right.getCurrentPosition();
+//        boolean isGoingUp = targetPos > arm_right.getCurrentPosition();
+        boolean isGoingUp = deg > 120;
 
-        arm_right.setTargetPosition((int)targetPos);
+
+        arm_right.setTargetPosition(((int)targetPos));
         arm_right.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        arm_left.setTargetPosition((int)targetPos);
+
+        arm_left.setTargetPosition(((int)targetPos));
         arm_left.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         // Set the required driving speed  (must be positive for RUN_TO_POSITION)
@@ -136,6 +146,9 @@ public class Arm {
 
                 arm_right.setPower(0.1);
                 arm_left.setPower(0.1);
+            } else {
+                arm_right.setPower(power_auto_move);
+                arm_left.setPower(power_auto_move);
             }
 
             // Display drive status for the driver.
@@ -163,7 +176,8 @@ public class Arm {
         arm_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         arm_left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        if ((power < 0) && (deg > 0)
+        // TODO: allows pushing the arm down for now
+        if (true || (power < 0) && (deg > 0)
             || (power > 0) && (deg < 210)) {
             arm_right.setPower(power);
             arm_left.setPower(power);
@@ -178,11 +192,7 @@ public class Arm {
     public void listen() {
 
         // move arm according to the left stick y
-            double fibulaPower = -myOpMode.gamepad2.left_stick_y;
-            if (Math.abs(fibulaPower) > 0.1) {
-                fibula.setPower(-myOpMode.gamepad2.left_stick_y);
 
-            }
 
             double power = -myOpMode.gamepad2.right_stick_y;
             if (Math.abs(power) > 0.1) {
@@ -190,6 +200,11 @@ public class Arm {
             } else {
                 arm_right.setPower(0.0);
                 arm_left.setPower(0.0);
+            }
+
+            if (myOpMode.gamepad2.dpad_right) {
+                arm_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                arm_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             }
 
     }
