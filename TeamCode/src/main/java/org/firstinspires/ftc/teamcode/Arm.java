@@ -118,6 +118,8 @@ public class Arm {
         double targetPos = degToPosition(deg);
 //        boolean isGoingUp = targetPos > arm_right.getCurrentPosition();
         boolean isGoingUp = deg > 120;
+        double thresh_slow_deg_hi = degToPosition(THRESHOLD_TO_SLOW_IN_DEG_HI);
+        double thresh_slow_deg_lo = degToPosition(THRESHOLD_TO_SLOW_IN_DEG_LO);
 
 
         arm_right.setTargetPosition(((int)targetPos));
@@ -137,11 +139,11 @@ public class Arm {
 
             // decide if we reach a threshold to slow down
             if ((isGoingUp
-                    && (arm_right.getCurrentPosition() > degToPosition(THRESHOLD_TO_SLOW_IN_DEG_HI)
-                            || arm_left.getCurrentPosition() > degToPosition(THRESHOLD_TO_SLOW_IN_DEG_HI))
+                    && (arm_right.getCurrentPosition() > thresh_slow_deg_hi
+                            || arm_left.getCurrentPosition() > thresh_slow_deg_hi)
                 ) || ( !isGoingUp
-                    && (arm_right.getCurrentPosition() < degToPosition(THRESHOLD_TO_SLOW_IN_DEG_LO)
-                            || arm_left.getCurrentPosition() < degToPosition(THRESHOLD_TO_SLOW_IN_DEG_LO))
+                    && (arm_right.getCurrentPosition() < thresh_slow_deg_lo
+                            || arm_left.getCurrentPosition() < thresh_slow_deg_lo)
             )) {
 
                 arm_right.setPower(0.1);
