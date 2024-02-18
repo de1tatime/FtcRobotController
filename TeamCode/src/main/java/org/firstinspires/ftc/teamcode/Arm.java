@@ -49,6 +49,12 @@ public class Arm {
     static final double THRESHOLD_TO_SLOW_IN_DEG_HI = 70;
     static final double THRESHOLD_TO_SLOW_IN_DEG_LO = 40;
 
+    static final double THRESHOLD_TO_SLOW_IN_POS_HI = (THRESHOLD_TO_SLOW_IN_DEG_HI / 360 * COUNTS_PER_REVOLUTION * GEAR_RATIO);
+    static final double THRESHOLD_TO_SLOW_IN_POS_LO = (THRESHOLD_TO_SLOW_IN_DEG_LO / 360 * COUNTS_PER_REVOLUTION * GEAR_RATIO);
+
+    static final double ARM_UP_DEG = 140;
+    private int arm_up_position = (int)(ARM_UP_DEG / 360 * COUNTS_PER_REVOLUTION * GEAR_RATIO);
+
 
     static final double  POWER_UP_MUL = 0.8;
     static final double  POWER_DOWN_MUL = 0.8;
@@ -116,11 +122,12 @@ public class Arm {
 
     public void moveToDegree(double deg) {
         double targetPos = degToPosition(deg);
-//        boolean isGoingUp = targetPos > arm_right.getCurrentPosition();
-        boolean isGoingUp = deg > 120;
-        double thresh_slow_deg_hi = degToPosition(THRESHOLD_TO_SLOW_IN_DEG_HI);
-        double thresh_slow_deg_lo = degToPosition(THRESHOLD_TO_SLOW_IN_DEG_LO);
+        moveToPosition(targetPos);
+    }
 
+    public void moveToPosition(double targetPos) {
+
+        boolean isGoingUp = targetPos > degToPosition(100);
 
         arm_right.setTargetPosition(((int)targetPos));
         arm_right.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -139,11 +146,11 @@ public class Arm {
 
             // decide if we reach a threshold to slow down
             if ((isGoingUp
-                    && (arm_right.getCurrentPosition() > thresh_slow_deg_hi
-                            || arm_left.getCurrentPosition() > thresh_slow_deg_hi)
-                ) || ( !isGoingUp
-                    && (arm_right.getCurrentPosition() < thresh_slow_deg_lo
-                            || arm_left.getCurrentPosition() < thresh_slow_deg_lo)
+                    && (arm_right.getCurrentPosition() > THRESHOLD_TO_SLOW_IN_POS_HI
+                    || arm_left.getCurrentPosition() > THRESHOLD_TO_SLOW_IN_POS_HI)
+            ) || ( !isGoingUp
+                    && (arm_right.getCurrentPosition() < THRESHOLD_TO_SLOW_IN_POS_LO
+                    || arm_left.getCurrentPosition() < THRESHOLD_TO_SLOW_IN_POS_LO)
             )) {
 
                 arm_right.setPower(0.05);
@@ -164,7 +171,7 @@ public class Arm {
         arm_right.setPower(0);
         arm_left.setPower(0);
 
-        this.deg = deg;
+        this.deg = positionToDeg(arm_right.getCurrentPosition());
 
     }
 
@@ -208,15 +215,25 @@ public class Arm {
             if (myOpMode.gamepad2.start) {
                 arm_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 arm_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            }
+
+            if (myOpMode.gamepad2.back) {
+                arm_up_position = (int)((arm_right.getCurrentPosition() + arm_left.getCurrentPosition())/2);
+                myOpMode.telemetry.addData("Reset Arm Up deg Left/Right", "%4f / %4f",
+                        positionToDeg(arm_left.getCurrentPosition()),
+                        positionToDeg(arm_right.getCurrentPosition()));
             }
 
         if(myOpMode.gamepad2.right_bumper) {
-            moveToDegree(0);
+            moveToPosition(0);
         }
 
         if(myOpMode.gamepad2.left_bumper) {
-            moveToDegree(140);
+            moveToPosition(arm_up_position);
         }
+
+        sendTelemetry();
 
 
     }
