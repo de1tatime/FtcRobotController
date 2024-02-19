@@ -130,7 +130,7 @@
  
          double strafe = 0;
          double max;
-         double drone_launcher_pos = 0.6;
+         double drone_launcher_pos = 1;
          String StrafeToString = null;
          // run until the end of the match (driver presses STOP)
          while (opModeIsActive()) {
@@ -156,14 +156,13 @@
                  strafe = 0;
                  StrafeToString = "Idle";
              }
- 
+
              if (gamepad2.x) {
-                 drone_launcher_pos = 1;
+                 dronelaunch.setPosition(1);
              }
              if (gamepad2.b) {
-                 drone_launcher_pos = 0;
+                 dronelaunch.setPosition(0);
              }
-             dronelaunch.setPosition(drone_launcher_pos);
  
  
              // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
@@ -249,6 +248,8 @@
              telemetry.addData("Strafe Value", StrafeToString);
              telemetry.addData("Drone Launcher Value:", drone_launcher_pos);
              telemetry.addData("Speed Value:", mulPower);
+             telemetry.addData("Gamepad 1 Input?", !gamepad1.atRest());
+             telemetry.addData("Gamepad 2 Input?", !gamepad2.atRest());
              telemetry.update();
          }
      }

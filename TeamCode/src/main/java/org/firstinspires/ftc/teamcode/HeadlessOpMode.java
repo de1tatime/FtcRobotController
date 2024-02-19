@@ -167,7 +167,7 @@ public class HeadlessOpMode extends LinearOpMode {
 
         double strafe = 0;
         double max;
-        double drone_launcher_pos = 0.6;
+        double drone_launcher_pos = 1;
         String StrafeToString = null;
         boolean is_turning_detected = false;
 
@@ -197,12 +197,12 @@ public class HeadlessOpMode extends LinearOpMode {
             }
 
             if (gamepad2.x) {
-                drone_launcher_pos = 1;
+                dronelaunch.setPosition(1);
             }
             if (gamepad2.b) {
-                drone_launcher_pos = 0;
+                dronelaunch.setPosition(0);
             }
-            dronelaunch.setPosition(drone_launcher_pos);
+
 
 
             // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
@@ -343,6 +343,8 @@ public class HeadlessOpMode extends LinearOpMode {
             telemetry.addData("Heading / Sine / Cosine", "%4.2f, %4.2f, %4.2f", heading, sin_heading, cos_heading);
             telemetry.addData("XY Reference", "%4.2f, %4.2f", x_ref, y_ref);
             telemetry.addData("XY Frame", "%4.2f, %4.2f", x_frame, y_frame);
+            telemetry.addData("Gamepad 1 Input?", gamepad1.atRest());
+            telemetry.addData("Gamepad 2 Input?", gamepad2.atRest());
             telemetry.update();
         }
 

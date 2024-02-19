@@ -194,9 +194,9 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
                     if (isBack) {
                         // go a little bit opposite of the backboard and go park
-                        driveKeepHeading(1.5, 0.1, sideMul * -90);
-                        driveKeepHeading(1.5, 0.35, sideMul * 180);
-                        driveKeepHeading(1.5, 0.15, sideMul * 90);
+                        driveKeepHeading(1, 0.1, sideMul * -90);
+                        driveKeepHeading(1, 0.5, sideMul * 180);
+                        driveKeepHeading(1, 0.15, sideMul * 90);
 
                     }
 
@@ -293,9 +293,9 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                             || currState == FSMState.ASSUME_RIGHT_BACK_RED
                     ) {
                         // go a little bit opposite of the backboard and go park
-                        driveKeepHeading(1.5, 0.1, sideMul * -90);
-                        driveKeepHeading(1.5, 0.25, sideMul * 180);
-                        driveKeepHeading(1.5, 0.15, sideMul * 90);
+                        driveKeepHeading(1, 0.1, sideMul * -90);
+                        driveKeepHeading(1, 0.43, sideMul * 180);
+                        driveKeepHeading(1, 0.15, sideMul * 90);
 
                     }
 
@@ -378,9 +378,9 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
 
                     // go a little bit opposite of the backboard and go park
-                    driveKeepHeading(1.5, 0.1, sideMul * -90);
-                    driveKeepHeading(1.5, 0.45, sideMul * 180);
-                    driveKeepHeading(1.5, 0.15, sideMul * 90);
+                    driveKeepHeading(1, 0.1, sideMul * -90);
+                    driveKeepHeading(1, 0.62, sideMul * 180);
+                    driveKeepHeading(1, 0.15, sideMul * 90);
 
                     nextState = FSMState.DONE;
 
