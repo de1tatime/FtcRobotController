@@ -183,12 +183,6 @@ public class HeadlessOpMode extends LinearOpMode {
                 waitRuntime(0.2);
             }
 
-            if(gamepad2.left_bumper) {
-                    wrist.wristUp();
-                    arm.moveToDegree(130);
-
-            }
-
             if (gamepad1.x) {
                 imu.resetYaw();
                 lastHeading = 0.0;
@@ -201,6 +195,7 @@ public class HeadlessOpMode extends LinearOpMode {
             }
             if (gamepad2.b) {
                 drone_launcher_pos = 0;
+
             }
             dronelaunch.setPosition(drone_launcher_pos);
 

@@ -104,6 +104,10 @@ public class Wrist {
             }
         }
 
+        if(myOpMode.gamepad2.left_bumper) {
+            wristUp();
+        }
+
         return runToPosition();
 
     }
