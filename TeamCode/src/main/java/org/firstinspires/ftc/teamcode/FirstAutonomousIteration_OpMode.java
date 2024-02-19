@@ -259,13 +259,13 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
                         if (isBack) {
                             driveKeepHeading(1.0, 0.3, sideMul * 90);
-                            driveKeepHeading(1, 0.55, 0);
+                            driveKeepHeading(1, 0.38, 0);
                             driveKeepHeading(1.0, 0.25+BACK_DROP_ADD_SEC, sideMul * 90);
 
                         } else{
                             driveKeepHeading(1.0, 0.7, sideMul * 90);
                             waitRuntime(0.2);
-                            driveKeepHeading(1, 0.55, 0);
+                            driveKeepHeading(1, 0.38, 0);
                             waitRuntime(0.2);
                             driveKeepHeading(1.0, 0.3+0.25+BACK_DROP_ADD_SEC, sideMul * 90);
 
@@ -283,9 +283,9 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     // if on the back, we want to park
                     if (isBack) {
                         // go a little bit opposite of the backboard and go park
-                        driveKeepHeading(1, 0.1, sideMul * -90);
-                        driveKeepHeading(1, 0.43, sideMul * 180);
-                        driveKeepHeading(1, 0.15, sideMul * 90);
+                        driveKeepHeading(1, 0.15, sideMul * -90);
+                        driveKeepHeading(1, 0.35, sideMul * 180);
+                        driveKeepHeading(1, 0.21, sideMul * 90);
 
                     }
 
@@ -385,26 +385,20 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                         // go back ready to park
                         driveStraight(DRIVE_SPEED*3, -(17), 0.0);
 
-                        if (isBack) {
-                            driveStraight(DRIVE_SPEED*1, 2, 0.0);
-
-                        } else {
                             // go little further to avoid the truss
-                            driveStraight(DRIVE_SPEED*1, 4, 0.0);
-
-                        }
+                            driveStraight(DRIVE_SPEED*1, 3, 0.0);
 
                         // face behind the back board
                         turnToHeading(TURN_SPEED*2, sideMul * -90);
 
                         // go back
-                    driveKeepHeading(1.0, 0.7, sideMul * 90);
-                    waitRuntime(0.5);
+                    driveKeepHeading(1.0, 0.9, sideMul * 90);
+                    waitRuntime(0.2);
 
                         // go to the right backdrop
-                        driveKeepHeading(1, 0.6, 0);
+                        driveKeepHeading(1, 0.65, 0);
 
-                    driveKeepHeading(1.0, 0.35+0.25+BACK_DROP_ADD_SEC, sideMul * 90);
+                    driveKeepHeading(1.0, 0.25+BACK_DROP_ADD_SEC, sideMul * 90);
 
                     // and then drop yellow pixel
                         arm.moveArmUp();

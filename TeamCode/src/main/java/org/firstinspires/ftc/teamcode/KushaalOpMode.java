@@ -138,6 +138,13 @@
              claw.listen();
              wrist.listen();
 
+             if (gamepad2.dpad_right) {
+                 // drop the pixel from the front
+                 // move the arm a little bit
+                 // and then wrist to half way
+                 arm.moveToDegree(45);
+                 wrist.go_to_position(0.5);
+             }
 
              if (gamepad1.left_bumper) {
                  strafe = -1;

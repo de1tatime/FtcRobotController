@@ -92,8 +92,7 @@ public class Arm {
     }
 
     public void moveArmUp() {
-        deg = 150;
-        moveToDegree(deg);
+        moveToDegree(ARM_UP_DEG);
     }
 
     public void moveArmUpMore() {
@@ -143,7 +142,8 @@ public class Arm {
         arm_left.setPower(power_auto_move);
 
         // keep looping while we are still active, and BOTH motors are running.
-        while (arm_right.isBusy() && arm_left.isBusy()) {
+        while (arm_right.isBusy() && arm_left.isBusy()
+            && myOpMode.gamepad1.atRest() && myOpMode.gamepad2.atRest()) {
 
             // decide if we reach a threshold to slow down
             if ((isGoingUp
@@ -238,4 +238,5 @@ public class Arm {
 
 
     }
+
 }
