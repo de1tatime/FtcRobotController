@@ -52,7 +52,8 @@ public class Arm {
     static final double THRESHOLD_TO_SLOW_IN_POS_HI = (THRESHOLD_TO_SLOW_IN_DEG_HI / 360 * COUNTS_PER_REVOLUTION * GEAR_RATIO);
     static final double THRESHOLD_TO_SLOW_IN_POS_LO = (THRESHOLD_TO_SLOW_IN_DEG_LO / 360 * COUNTS_PER_REVOLUTION * GEAR_RATIO);
 
-    static final double ARM_UP_DEG = 140;
+    static final double ARM_UP_DEG = 133.75
+            ;
     private int arm_up_position = (int)(ARM_UP_DEG / 360 * COUNTS_PER_REVOLUTION * GEAR_RATIO);
 
 
