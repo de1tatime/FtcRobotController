@@ -138,11 +138,6 @@
              claw.listen();
              wrist.listen();
 
-             if(gamepad2.left_bumper) {
-                 wrist.wristUp();
-                 arm.moveToDegree(140);
-             }
-
 
              if (gamepad1.left_bumper) {
                  strafe = -1;
