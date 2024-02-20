@@ -283,9 +283,9 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     // if on the back, we want to park
                     if (isBack) {
                         // go a little bit opposite of the backboard and go park
-                        driveKeepHeading(1, 0.15, sideMul * -90);
+                        driveKeepHeading(1, 0.20, sideMul * -90);
                         driveKeepHeading(1, 0.35, sideMul * 180);
-                        driveKeepHeading(1, 0.21, sideMul * 90);
+                        driveKeepHeading(1, 0.26, sideMul * 90);
 
                     }
 
