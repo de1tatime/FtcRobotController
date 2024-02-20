@@ -640,7 +640,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
     // TFOD_MODEL_ASSET points to a model file stored in the project Asset location,
     // this is only used for Android Studio when using models in Assets.
-    private static final String TFOD_MODEL_ASSET = "prop_cube_v2.tflite";
+    private static final String TFOD_MODEL_ASSET = "prop_cube_v3.tflite";
     // TFOD_MODEL_FILE points to a model file stored onboard the Robot Controller's storage,
     // this is used when uploading models directly to the RC using the model upload interface.
     private static final String TFOD_MODEL_FILE = "/sdcard/FIRST/tflitemodels/myCustomModel.tflite";
@@ -790,7 +790,9 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
         visionPortal = builder.build();
 
         // Set confidence threshold for TFOD recognitions, at any time.
-        //tfod.setMinResultConfidence(0.75f);
+        tfod.setMinResultConfidence(0.75f);
+
+        tfod.setClippingMargins(0,200,0,0);
 
         // Disable or re-enable the TFOD processor at any time.
         //visionPortal.setProcessorEnabled(tfod, true);
