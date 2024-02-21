@@ -9,7 +9,7 @@ This is a copy of the FirstAutonomousIterationMirror just the last portion to ma
  */
 
 
-@Autonomous(name="Blue Front: Auto V0.2", group="Robot")
+@Autonomous(name="Blue Front: Auto V0.2", group="Robot", preselectTeleOp="KushaalOpMode")
 //@Disabled
 
 public class FirstAutonomousIterationBlue extends FirstAutonomousIteration_OpMode {
