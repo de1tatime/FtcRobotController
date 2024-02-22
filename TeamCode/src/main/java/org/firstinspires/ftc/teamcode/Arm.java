@@ -226,10 +226,6 @@ public class Arm {
                         positionToDeg(arm_right.getCurrentPosition()));
             }
 
-        if(myOpMode.gamepad2.right_bumper) {
-            moveToPosition(0);
-        }
-
         if(myOpMode.gamepad2.left_bumper) {
             moveToPosition(arm_up_position);
         }

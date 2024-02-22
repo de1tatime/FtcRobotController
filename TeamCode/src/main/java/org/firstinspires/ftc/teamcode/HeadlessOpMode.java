@@ -361,9 +361,10 @@ public class HeadlessOpMode extends LinearOpMode {
         // Determine the heading current error
         headingError = desiredHeading - getHeading();
 
-        // Normalize the error to be within +/- 180 degrees
-        while (headingError > 180)  headingError -= 360;
-        while (headingError <= -180) headingError += 360;
+        // do not correct heading if headingError too much
+        if (Math.abs(headingError) > 5) {
+            return 0;
+        }
 
         // Multiply the error by the gain to determine the required steering correction/  Limit the result to +/- 1.0
         return Range.clip(headingError * proportionalGain, -1, 1);

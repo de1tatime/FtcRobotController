@@ -87,6 +87,7 @@ public class OtherHeadless extends LinearOpMode {
     static final RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
     static final RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.LEFT;
     static final RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
+    static final double P_TURN_GAIN = 0.008;
 
     public void waitRuntime(double sec) {
         runtime.reset();
@@ -150,6 +151,7 @@ public class OtherHeadless extends LinearOpMode {
                 imu.resetYaw();
                 lastHeading = 0.0;
                 targetHeading = 0.0;
+                heading = 0.0;
                 waitRuntime(0.3);
             }
 
@@ -182,9 +184,9 @@ public class OtherHeadless extends LinearOpMode {
             double max;
 
             // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
-            double yref   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
+            double yref = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
             double xref =  gamepad1.left_stick_x;
-            double heading = getHeading();
+            heading = getHeading();
             double cos_heading = Math.cos(heading/180*Math.PI);
             double sin_heading = Math.sin(heading/180*Math.PI);
 
@@ -193,12 +195,14 @@ public class OtherHeadless extends LinearOpMode {
             double yaw     =  gamepad1.right_stick_x;
             double strafe  =  gamepad1.right_trigger - gamepad1.left_trigger;
 
+            double turnSpeed = getSteeringCorrection(getTargetHeading(), P_TURN_GAIN);
+
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
-            double leftFrontPower  = axial + lateral + yaw + strafe;
-            double rightFrontPower = axial - lateral - yaw - strafe;
-            double leftBackPower   = axial - lateral + yaw - strafe;
-            double rightBackPower  = axial + lateral - yaw + strafe;
+            double leftFrontPower  = axial + lateral + yaw + strafe - turnSpeed;
+            double rightFrontPower = axial - lateral - yaw - strafe + turnSpeed;
+            double leftBackPower   = axial - lateral + yaw - strafe - turnSpeed;
+            double rightBackPower  = axial + lateral - yaw + strafe + turnSpeed;
 
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
@@ -211,22 +215,6 @@ public class OtherHeadless extends LinearOpMode {
                 rightFrontPower /= max;
                 leftBackPower   /= max;
                 rightBackPower  /= max;
-            }
-
-            // This part of this code is to increase the speed of the motor a little.
-            if(gamepad1.dpad_right){
-                mulPower+=0.1;
-                waitRuntime(0.2);
-            }
-            if(gamepad1.dpad_left){
-                mulPower-=0.1;
-                waitRuntime(0.2);
-            }
-            if (mulPower > 1) {
-                mulPower = 1;
-            }
-            if (mulPower < 0.2) {
-                mulPower = 0.2;
             }
 
             // This is test code:
@@ -292,9 +280,10 @@ public class OtherHeadless extends LinearOpMode {
         // Determine the heading current error
         headingError = desiredHeading - getHeading();
 
-        // Normalize the error to be within +/- 180 degrees
-        while (headingError > 180)  headingError -= 360;
-        while (headingError <= -180) headingError += 360;
+        // do not correct heading if headingError too much
+        if (headingError > 5) {
+            return 0;
+        }
 
         // Multiply the error by the gain to determine the required steering correction/  Limit the result to +/- 1.0
         return Range.clip(headingError * proportionalGain, -1, 1);
