@@ -38,7 +38,8 @@ public class Mecanum extends OpMode {
     Arm arm = new Arm(this);
     Claw claw       = new Claw(this);
     Wrist wrist = new Wrist(this);
-    public final void opModeIsActive() {
+    public final Boolean opModeIsActive() {
+        return true;
     }
 
     public void waitRuntime(double sec) {
