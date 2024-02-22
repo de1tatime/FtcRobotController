@@ -1,10 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -41,11 +38,7 @@ public class Mecanum extends OpMode {
     Arm arm = new Arm(this);
     Claw claw       = new Claw(this);
     Wrist wrist = new Wrist(this);
-    public final boolean opModeIsActive() {
-        boolean isActive = !this.stop() && this.isStarted();
-        if (isActive) {
-        }
-        return isActive;
+    public final void opModeIsActive() {
     }
 
     public void waitRuntime(double sec) {
