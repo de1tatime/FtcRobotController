@@ -27,14 +27,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.robotcontroller.external.samples;
+package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 /*
  * This file contains an example of a Linear "OpMode".
  * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
@@ -70,6 +76,7 @@ public class OtherHeadless extends LinearOpMode {
     private double lastHeading = context.getHeading();
     private double targetHeading = context.getHeading();
     private double heading = 0.0;
+    private IMU imu         = null;      // Control/Expansion Hub IMU
 
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -89,6 +96,7 @@ public class OtherHeadless extends LinearOpMode {
     static final RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
     static final double P_TURN_GAIN = 0.008;
 
+
     public void waitRuntime(double sec) {
         runtime.reset();
         while (opModeIsActive() && (runtime.seconds() < sec)) {
@@ -98,6 +106,8 @@ public class OtherHeadless extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        imu = hardwareMap.get(IMU .class, "imu");
+        imu.initialize(new IMU.Parameters(orientationOnRobot));
 
         // Initialize the hardware variables. Note that the strings used here must correspond
         // to the names assigned during the robot configuration step on the DS or RC devices.
@@ -184,8 +194,8 @@ public class OtherHeadless extends LinearOpMode {
             double max;
 
             // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
-            double yref = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
-            double xref =  gamepad1.left_stick_x;
+            double y_ref = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
+            double x_ref =  gamepad1.left_stick_x;
             heading = getHeading();
             double cos_heading = Math.cos(heading/180*Math.PI);
             double sin_heading = Math.sin(heading/180*Math.PI);
