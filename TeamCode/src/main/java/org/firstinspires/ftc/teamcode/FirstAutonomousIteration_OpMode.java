@@ -259,7 +259,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
                         if (isBack) {
                             driveKeepHeading(1.0, 0.3, sideMul * 90);
-                            driveKeepHeading(1, 0.38, 0);
+                            driveKeepHeading(1, 0.45, 0);
                             driveKeepHeading(1.0, 0.25+BACK_DROP_ADD_SEC, sideMul * 90);
 
                         } else{
