@@ -34,6 +34,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 /*
  * This file contains an example of a Linear "OpMode".
@@ -64,7 +65,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 @TeleOp(name="Psycho OpMode", group="Linear OpMode")
-// @Disabled
+@Disabled
 public class PsychoOpMode extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
