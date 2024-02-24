@@ -157,7 +157,6 @@ public class OtherHeadless extends LinearOpMode {
             wrist.listen();
 
             if (gamepad1.x) {
-                stopRobot();
                 imu.initialize(new IMU.Parameters(orientationOnRobot));
                 imu.resetDeviceConfigurationForOpMode();
                 
@@ -165,7 +164,6 @@ public class OtherHeadless extends LinearOpMode {
                 lastHeading = 0.0;
                 targetHeading = 0.0;
                 heading = 0.0;
-                waitRuntime(0.3);
             }
 
             if (gamepad2.x) {
