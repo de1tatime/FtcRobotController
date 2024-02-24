@@ -199,7 +199,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     if (isBack) {
                         // go a little bit opposite of the backboard and go park
                         driveKeepHeading(1, 0.1, sideMul * -90);
-                        driveKeepHeading(1, 0.5, sideMul * 180);
+                        driveKeepHeading(1, 0.6, sideMul * 180);
                         driveKeepHeading(1, 0.15, sideMul * 90);
 
                     }
