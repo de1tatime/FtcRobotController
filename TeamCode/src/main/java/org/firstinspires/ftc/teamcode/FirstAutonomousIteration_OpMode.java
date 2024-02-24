@@ -106,6 +106,10 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
     public void init_loop() {
             detectCube();
 
+            if (gamepad1.start) {
+                imu.resetYaw();
+            }
+
             telemetry.addData(">", "Robot Heading = %4.0f", getHeading());
             telemetry.addData("Detect cube: ", getFoundTeamPropString(cubeIsFound));
             telemetry.update();
