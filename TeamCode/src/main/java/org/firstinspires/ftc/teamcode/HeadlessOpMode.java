@@ -184,6 +184,8 @@ public class HeadlessOpMode extends LinearOpMode {
             }
 
             if (gamepad1.x) {
+                imu.initialize(new IMU.Parameters(orientationOnRobot));
+                imu.resetDeviceConfigurationForOpMode();
                 imu.resetYaw();
                 lastHeading = 0.0;
                 targetHeading = 0.0;
