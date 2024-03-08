@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 /*
 This is a copy of the FirstAutonomousIterationMirror just the last portion to make sure we go park
 
@@ -11,7 +11,7 @@ This is a copy of the FirstAutonomousIterationMirror just the last portion to ma
 
 
 @Autonomous(name="Test: Context Set", group="Test")
-//@Disabled
+@Disabled
 
 public class TestContextSingletonSet extends LinearOpMode {
 

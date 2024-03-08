@@ -37,7 +37,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
-
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
@@ -70,7 +70,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
   */
 
 @TeleOp(name="HeadlessOpMode", group="Linear OpMode")
-// @Disabled
+@Disabled
 public class HeadlessOpMode extends LinearOpMode {
 
     static final double HOLD_TIME_HEADING_CORRECTION = 0.1;
@@ -183,13 +183,9 @@ public class HeadlessOpMode extends LinearOpMode {
                 waitRuntime(0.2);
             }
 
-            if(gamepad2.left_bumper) {
-                    wrist.wristUp();
-                    arm.moveToDegree(130);
-
-            }
-
             if (gamepad1.x) {
+                imu.initialize(new IMU.Parameters(orientationOnRobot));
+                imu.resetDeviceConfigurationForOpMode();
                 imu.resetYaw();
                 lastHeading = 0.0;
                 targetHeading = 0.0;
@@ -201,6 +197,7 @@ public class HeadlessOpMode extends LinearOpMode {
             }
             if (gamepad2.b) {
                 drone_launcher_pos = 0;
+
             }
             dronelaunch.setPosition(drone_launcher_pos);
 
@@ -366,9 +363,10 @@ public class HeadlessOpMode extends LinearOpMode {
         // Determine the heading current error
         headingError = desiredHeading - getHeading();
 
-        // Normalize the error to be within +/- 180 degrees
-        while (headingError > 180)  headingError -= 360;
-        while (headingError <= -180) headingError += 360;
+        // do not correct heading if headingError too much
+        if (Math.abs(headingError) > 5) {
+            return 0;
+        }
 
         // Multiply the error by the gain to determine the required steering correction/  Limit the result to +/- 1.0
         return Range.clip(headingError * proportionalGain, -1, 1);

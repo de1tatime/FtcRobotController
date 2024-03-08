@@ -35,13 +35,25 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class Claw {
 
     static final double CLAW_CLOSE_POS = 1;
-    static final double CLAW_OPEN_POS = 0;
+
+    static final double CLAW_OPEN_POS = 0.5;
+
+    static final double CLAW_HALF_OPEN = (CLAW_OPEN_POS + CLAW_CLOSE_POS) / 2.0;
 
 
     // Define class members
 
 
     private OpMode myOpMode;   // gain access to methods in the calling OpMode.
+
+
+
+
+
+
+
+
+    
 
     Servo clawDrive = null;
     public Claw (OpMode opmode) {
@@ -57,6 +69,7 @@ public class Claw {
         clawDrive.setPosition(CLAW_CLOSE_POS);
     }
     public void openClaw(){
+        clawDrive.setPosition(CLAW_HALF_OPEN);
         clawDrive.setPosition(CLAW_OPEN_POS);
     }
 

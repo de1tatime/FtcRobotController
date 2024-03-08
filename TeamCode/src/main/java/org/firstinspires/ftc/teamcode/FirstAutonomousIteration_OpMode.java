@@ -106,6 +106,10 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
     public void init_loop() {
             detectCube();
 
+            if (gamepad1.start) {
+                imu.resetYaw();
+            }
+
             telemetry.addData(">", "Robot Heading = %4.0f", getHeading());
             telemetry.addData("Detect cube: ", getFoundTeamPropString(cubeIsFound));
             telemetry.update();
@@ -194,9 +198,9 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
                     if (isBack) {
                         // go a little bit opposite of the backboard and go park
-                        driveKeepHeading(1.5, 0.1, sideMul * -90);
-                        driveKeepHeading(1.5, 0.35, sideMul * 180);
-                        driveKeepHeading(1.5, 0.15, sideMul * 90);
+                        driveKeepHeading(1, 0.1, sideMul * -90);
+                        driveKeepHeading(1, 0.6, sideMul * 180);
+                        driveKeepHeading(1, 0.15, sideMul * 90);
 
                     }
 
@@ -247,7 +251,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                         // go back ready to park
                         driveStraight(DRIVE_SPEED*3, -(17), 0.0);
                         if (isBack) {
-                            driveStraight(DRIVE_SPEED*1, 2, 0.0);
+                            driveStraight(DRIVE_SPEED*1, 4, 0.0);
 
                         } else {
                             // go further more to avoid the truss
@@ -259,24 +263,17 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
                         if (isBack) {
                             driveKeepHeading(1.0, 0.3, sideMul * 90);
+                            driveKeepHeading(1, 0.45, 0);
+                            driveKeepHeading(1.0, 0.25+BACK_DROP_ADD_SEC, sideMul * 90);
 
                         } else{
                             driveKeepHeading(1.0, 0.7, sideMul * 90);
-                            waitRuntime(0.5);
-                            driveKeepHeading(1.0, 0.3, sideMul * 90);
+                            waitRuntime(0.2);
+                            driveKeepHeading(1, 0.45, 0);
+                            waitRuntime(0.2);
+                            driveKeepHeading(1.0, 0.3+0.25+BACK_DROP_ADD_SEC, sideMul * 90);
 
                         }
-                        waitRuntime(0.5);
-
-                        if (currState == FSMState.DETECT_LEFT_BACK_BLUE || currState == FSMState.DETECT_LEFT_FRONT_BLUE) {
-                            driveKeepHeading(1, 0.55, 0);
-                        } else {
-                            driveKeepHeading(1, 0.55, 0);
-
-                        }
-
-                    driveKeepHeading(1.0, 0.25+BACK_DROP_ADD_SEC, sideMul * 90);
-
 
 
                     // and then drop yellow pixel
@@ -288,14 +285,11 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                     arm.moveArmDown();
 
                     // if on the back, we want to park
-                    if (
-                            currState == FSMState.DETECT_LEFT_BACK_BLUE
-                            || currState == FSMState.ASSUME_RIGHT_BACK_RED
-                    ) {
+                    if (isBack) {
                         // go a little bit opposite of the backboard and go park
-                        driveKeepHeading(1.5, 0.1, sideMul * -90);
-                        driveKeepHeading(1.5, 0.25, sideMul * 180);
-                        driveKeepHeading(1.5, 0.15, sideMul * 90);
+                        driveKeepHeading(1, 0.20, sideMul * -90);
+                        driveKeepHeading(1, 0.35, sideMul * 180);
+                        driveKeepHeading(1, 0.26, sideMul * 90);
 
                     }
 
@@ -378,9 +372,9 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
 
                     // go a little bit opposite of the backboard and go park
-                    driveKeepHeading(1.5, 0.1, sideMul * -90);
-                    driveKeepHeading(1.5, 0.45, sideMul * 180);
-                    driveKeepHeading(1.5, 0.15, sideMul * 90);
+                    driveKeepHeading(1, 0.1, sideMul * -90);
+                    driveKeepHeading(1, 0.62, sideMul * 180);
+                    driveKeepHeading(1, 0.15, sideMul * 90);
 
                     nextState = FSMState.DONE;
 
@@ -395,30 +389,20 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
                         // go back ready to park
                         driveStraight(DRIVE_SPEED*3, -(17), 0.0);
 
-                        if (isBack) {
-                            driveStraight(DRIVE_SPEED*1, 2, 0.0);
-
-                        } else {
                             // go little further to avoid the truss
-                            driveStraight(DRIVE_SPEED*1, 4, 0.0);
-
-                        }
+                            driveStraight(DRIVE_SPEED*1, 3, 0.0);
 
                         // face behind the back board
                         turnToHeading(TURN_SPEED*2, sideMul * -90);
 
                         // go back
-                    driveKeepHeading(1.0, 0.7, sideMul * 90);
-                    waitRuntime(0.5);
-                    driveKeepHeading(1.0, 0.35, sideMul * 90);
-
-                        waitRuntime(0.5);
+                    driveKeepHeading(1.0, 0.9, sideMul * 90);
+                    waitRuntime(0.2);
 
                         // go to the right backdrop
-                        driveKeepHeading(1, 0.6, 0);
+                        driveKeepHeading(1, 0.65, 0);
 
                     driveKeepHeading(1.0, 0.25+BACK_DROP_ADD_SEC, sideMul * 90);
-
 
                     // and then drop yellow pixel
                         arm.moveArmUp();
@@ -660,7 +644,7 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
 
     // TFOD_MODEL_ASSET points to a model file stored in the project Asset location,
     // this is only used for Android Studio when using models in Assets.
-    private static final String TFOD_MODEL_ASSET = "prop_cube_v2.tflite";
+    private static final String TFOD_MODEL_ASSET = "prop_cube_v3.tflite";
     // TFOD_MODEL_FILE points to a model file stored onboard the Robot Controller's storage,
     // this is used when uploading models directly to the RC using the model upload interface.
     private static final String TFOD_MODEL_FILE = "/sdcard/FIRST/tflitemodels/myCustomModel.tflite";
@@ -810,7 +794,9 @@ public class FirstAutonomousIteration_OpMode  extends OpMode
         visionPortal = builder.build();
 
         // Set confidence threshold for TFOD recognitions, at any time.
-        //tfod.setMinResultConfidence(0.75f);
+        tfod.setMinResultConfidence(0.75f);
+
+        tfod.setClippingMargins(0,200,0,0);
 
         // Disable or re-enable the TFOD processor at any time.
         //visionPortal.setProcessorEnabled(tfod, true);
